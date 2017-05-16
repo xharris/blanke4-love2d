@@ -30,6 +30,7 @@ View = Class{
         self.port_y = 0
         self.port_width = love.graphics:getWidth()
         self.port_height = love.graphics:getHeight()
+        self.noclip = false
 
 		Signal.register('love.update', function(dt)
 			self._dt = dt
@@ -133,13 +134,11 @@ View = Class{
 	end,
 
 	attach = function(self)
-        love.graphics.setScissor(self.port_x, self.port_y, self.port_width, self.port_height)
-		self.camera:attach()
+        self.camera:attach(self.port_x, self.port_y, self.port_width, self.port_height, self.noclip)
 	end,
 
 	detach = function(self)
 		self.camera:detach()
-        love.graphics.setScissor()
 	end,
 }
 

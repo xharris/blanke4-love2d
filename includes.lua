@@ -1,3 +1,4 @@
+require 'plugins.blanke.Globals'
 require 'plugins.blanke.Util'
 Signal = require 'plugins.hump.signal'
 Gamestate = require 'plugins.hump.gamestate'
@@ -45,11 +46,15 @@ _Entity = require 'plugins.blanke.Entity'
 Map = require 'plugins.blanke.Map'
 View = require 'plugins.blanke.View'
 Effect = require 'plugins.blanke.Effect'
-Globals = require 'plugins.blanke.Globals'
 
 Signal.register('love.load', function()
 	-- register gamestates
+    updateGlobals(0)
 	if "<FIRST_STATE>" ~= "" then
 		Gamestate.run(<FIRST_STATE>)
 	end
+end)
+
+Signal.register('love.update', function(dt)
+    updateGlobals(dt)
 end)
