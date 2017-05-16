@@ -1,5 +1,6 @@
 var nwHELPER = nwPLUGINS['build_helper'];
-var nwDECOMP = require('decompress');
+
+var new_dirname = __dirname; // do i need this?
 
 exports.modules = ['entity', 'image', 'state', 'spritesheet', 'audio', 'script'];
 exports.colors = [
@@ -18,8 +19,8 @@ exports.colors = [
 ]
 
 // code editor
-exports.entity_template = nwPATH.join(__dirname, 'entity_template.lua');
-exports.state_template = nwPATH.join(__dirname, 'state_template.lua');
+exports.entity_template = nwPATH.join(new_dirname, 'entity_template.lua');
+exports.state_template = nwPATH.join(new_dirname, 'state_template.lua');
 exports.language = 'lua';
 exports.file_ext = 'lua';
 
@@ -116,6 +117,7 @@ function downloadLove(os='win', callback) {
 				// download version for os
 				var zip_path = getLoveFolder(os)+".zip";
 				b_console.log('downloading ' + nwPATH.basename(zip_path));
+				console.log('to ' + zip_path);
 				nwHELPER.download(getLoveURL(os), zip_path, function(err){
 					// unzip it
 					nwDECOMP(zip_path, getLoveDownFolder(os)).then(function(files){
@@ -142,18 +144,18 @@ function getLoveURL(os='win', version=b_project.getSetting("engine", "version"))
 
 function getLoveDownFolder(os='', version=b_project.getSetting("engine", "version")) {
 	var paths = {
-		'' : nwPATH.join(__dirname, "bin"),
-		'win' : nwPATH.join(__dirname, "bin"),
-		'mac' : nwPATH.join(__dirname, "bin", "love-"+version+"-macosx-x64")
+		'' : nwPATH.join(new_dirname, "bin"),
+		'win' : nwPATH.join(new_dirname, "bin"),
+		'mac' : nwPATH.join(new_dirname, "bin", "love-"+version+"-macosx-x64")
 	}
 	return paths[os];
 }
 
 function getLoveFolder(os='', version=b_project.getSetting("engine", "version")) {
 	var paths = {
-		'' : nwPATH.join(__dirname, "bin"),
-		'win' : nwPATH.join(__dirname, "bin", "love-"+version+"-win32"),
-		'mac' : nwPATH.join(__dirname, "bin", "love-"+version+"-macosx-x64", "love.app")
+		'' : nwPATH.join(new_dirname, "bin"),
+		'win' : nwPATH.join(new_dirname, "bin", "love-"+version+"-win32"),
+		'mac' : nwPATH.join(new_dirname, "bin", "love-"+version+"-macosx-x64", "love.app")
 	}
 	return paths[os];
 }
@@ -264,7 +266,7 @@ exports.loaded = function() {
 		nwFILE.stat(nwPATH.join(b_project.curr_project, "assets", "main.lua"), function(err, stat){
 			if (err || !stat.isFile()) {
 				var html_code = nwFILEX.copy(
-					nwPATH.join(__dirname, 'main.lua'),
+					nwPATH.join(new_dirname, 'main.lua'),
 					nwPATH.join(b_project.curr_project, "assets", "main.lua")
 				);
 			}

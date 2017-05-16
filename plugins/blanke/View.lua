@@ -21,10 +21,15 @@ View = Class{
 		self.angle = 0
 		self.rot_speed = 5
 		self.rot_type = 'none'
-
+        
 		self.scale = 1
 		self.zoom_speed = 5
 		self.zoom_type = 'none'
+        
+        self.port_x = 0
+        self.port_y = 0
+        self.port_width = love.graphics:getWidth()
+        self.port_height = love.graphics:getHeight()
 
 		Signal.register('love.update', function(dt)
 			self._dt = dt
@@ -128,11 +133,13 @@ View = Class{
 	end,
 
 	attach = function(self)
+        love.graphics.setScissor(self.port_x, self.port_y, self.port_width, self.port_height)
 		self.camera:attach()
 	end,
 
 	detach = function(self)
 		self.camera:detach()
+        love.graphics.setScissor()
 	end,
 }
 
