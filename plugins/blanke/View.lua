@@ -62,7 +62,7 @@ View = Class{
 	end,
 
 	snapToPosition = function(self, x, y)
-		self:camera:lookAt(x, y)
+		self.camera:lookAt(x, y)
 	end,
 
 	rotateTo = function(self, angle)

@@ -1,4 +1,5 @@
 var nwHELPER = nwPLUGINS['build_helper'];
+var nwDECOMP = require('decompress');
 
 exports.modules = ['entity', 'image', 'state', 'spritesheet', 'audio', 'script'];
 exports.colors = [
@@ -45,23 +46,28 @@ exports.targets = {
 			nwMKDIRP(nwPATH.dirname(build_path), function(){
 
 				buildLove(objects, function(path){
-					switch(nwOS.platform()) {
-						case "win32":
-							// combine love.exe and .love
-							// Ex. copy /b love.exe+SuperGame.love SuperGame.exe
-							cmd = 'copy /b \"'+nwPATH.join(__dirname, "love-0.10.2-win32", "love.exe")+'\"+\"'+path+'\" \"'+build_path+'\"';
-							nwCHILD.exec(cmd);
+					downloadLove('win', function(){
 
-							// copy required dlls
-							var other_files = ["love.dll", "lua51.dll", "mpg123.dll", "SDL2.dll"];
-							for (var o = 0; o < other_files.length; o++) {
-								var file = other_files[o];
-								nwFILEX.copy(nwPATH.join(__dirname, "love-0.10.2-win32", file), nwPATH.join(nwPATH.dirname(build_path), file));
-							}
-							
-							eSHELL.openItem(nwPATH.dirname(build_path));
-						break;
-					}
+						switch(nwOS.platform()) {
+							case "win32":
+								// combine love.exe and .love
+								// Ex. copy /b love.exe+SuperGame.love SuperGame.exe
+								cmd = 'copy /b \"'+nwPATH.join(getLoveFolder('win'), "love.exe")+'\"+\"'+path+'\" \"'+build_path+'\"';
+								nwCHILD.exec(cmd);
+
+								// copy required dlls
+								var other_files = ["love.dll", "lua51.dll", "mpg123.dll", "SDL2.dll"];
+								for (var o = 0; o < other_files.length; o++) {
+									var file = other_files[o];
+									nwFILEX.copy(nwPATH.join(getLoveFolder('win'), file), nwPATH.join(nwPATH.dirname(build_path), file));
+								}
+								
+								eSHELL.openItem(nwPATH.dirname(build_path));
+							break;
+						}
+
+					});
+					
 				});
 
 			});
@@ -73,37 +79,96 @@ exports.targets = {
 			var build_path = nwPATH.join(getBuildPath(), 'mac')
 
 			nwMKDIRP(build_path, function(){
-				// copy love.app and rename it
-				build_path = nwPATH.join(build_path, b_project.getSetting("engine", "title")+'.app');
-				nwFILEX.copy(nwPATH.join(__dirname, "love-0.10.2-macosx-x64", "love.app"), build_path, function(){
-					// create .love and copy it into app/Contents/Resources/
-					buildLove(objects, function(path){
-						nwFILEX.copy(path, nwPATH.join(build_path, 'Contents', 'Resources', b_project.getSetting("engine", "title")+'.love'));
+				downloadLove('mac', function(){
 
-						// modify app/Contents/Info.plist			
-						plist_repl = [
-							['<COMPANY>', 'Made with BlankE'],
-							['<TITLE>', b_project.getSetting("engine", "title")]
-						];
-						plist_path = nwPATH.join(build_path, 'Contents', 'Info.plist');
-						nwHELPER.copyScript(plist_path, plist_path, plist_repl);
+					// copy love.app and rename it
+					build_path = nwPATH.join(build_path, b_project.getSetting("engine", "title")+'.app');
+					nwFILEX.copy(nwPATH.join(getLoveFolder('mac'), "love.app"), build_path, function(){
+						// create .love and copy it into app/Contents/Resources/
+						buildLove(objects, function(path){
+							nwFILEX.copy(path, nwPATH.join(build_path, 'Contents', 'Resources', b_project.getSetting("engine", "title")+'.love'));
 
-						eSHELL.openItem(nwPATH.dirname(build_path));
+							// modify app/Contents/Info.plist			
+							plist_repl = [
+								['<COMPANY>', 'Made with BlankE'],
+								['<TITLE>', b_project.getSetting("engine", "title")]
+							];
+							plist_path = nwPATH.join(build_path, 'Contents', 'Info.plist');
+							nwHELPER.copyScript(plist_path, plist_path, plist_repl);
+
+							eSHELL.openItem(nwPATH.dirname(build_path));
+						});
 					});
+
 				});
 			});
 		}
 	}
 }
 
+// problem with decompress mac build
+function downloadLove(os='win', callback) {
+	// check if already downloaded
+	nwFILE.stat(getLoveFolder(os), function(err, stat){
+		if (err || !stat.isDirectory()) {
+
+			nwMKDIRP(getLoveDownFolder(os), function(){
+				// download version for os
+				var zip_path = getLoveFolder(os)+".zip";
+				b_console.log('downloading ' + nwPATH.basename(zip_path));
+				nwHELPER.download(getLoveURL(os), zip_path, function(err){
+					// unzip it
+					nwDECOMP(zip_path, getLoveDownFolder(os)).then(function(files){
+						// delete zip
+						nwFILEX.remove(zip_path);
+						if (callback) callback();
+					});
+				});
+			});
+
+		} else {
+			if (callback) callback();
+		}
+	});
+}
+
+function getLoveURL(os='win', version=b_project.getSetting("engine", "version")) {
+	var paths = {
+		'win' : "http://bitbucket.org/rude/love/downloads/love-"+version+"-win32.zip",
+		'mac' : "http://bitbucket.org/rude/love/downloads/love-"+version+"-macosx-x64.zip"
+	}
+	return paths[os];
+}
+
+function getLoveDownFolder(os='', version=b_project.getSetting("engine", "version")) {
+	var paths = {
+		'' : nwPATH.join(__dirname, "bin"),
+		'win' : nwPATH.join(__dirname, "bin"),
+		'mac' : nwPATH.join(__dirname, "bin", "love-"+version+"-macosx-x64")
+	}
+	return paths[os];
+}
+
+function getLoveFolder(os='', version=b_project.getSetting("engine", "version")) {
+	var paths = {
+		'' : nwPATH.join(__dirname, "bin"),
+		'win' : nwPATH.join(__dirname, "bin", "love-"+version+"-win32"),
+		'mac' : nwPATH.join(__dirname, "bin", "love-"+version+"-macosx-x64", "love.app")
+	}
+	return paths[os];
+}
+
+// only works for windows atm
 function runLove(love_path, show_cmd=b_project.getSetting("engine","console")) {
-	var cmd = '';
-	if (show_cmd) 
-		cmd = 'start cmd.exe /K \"\"'+nwPATH.join(__dirname, "love-0.10.2-win32", "love.exe")+'\" \"'+love_path+'\"\"';
-	else 
-		cmd = '\"'+nwPATH.join(__dirname, "love-0.10.2-win32", "love.exe")+'\" \"'+love_path+'\"';
-	
-	nwCHILD.exec(cmd);
+	downloadLove('win', function(){
+		var cmd = '';
+		if (show_cmd) 
+			cmd = 'start cmd.exe /K \"\"'+nwPATH.join(getLoveFolder('win'), "love.exe")+'\" \"'+love_path+'\"\"';
+		else 
+			cmd = '\"'+nwPATH.join(getLoveFolder('win'), "love.exe")+'\" \"'+love_path+'\"';
+		
+		nwCHILD.exec(cmd);
+	});
 }
 
 exports.run = function(objects) {
