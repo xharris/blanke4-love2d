@@ -31,6 +31,12 @@ View = Class{
         self.port_width = love.graphics:getWidth()
         self.port_height = love.graphics:getHeight()
         self.noclip = false
+        
+        self.shake_x = 0
+        self.shake_y = 0
+        self.shake_intensity = 7
+        self.shake_falloff = 2.5
+        self.shake_type = 'smooth'
 
 		Signal.register('love.update', function(dt)
 			self._dt = dt
@@ -78,13 +84,26 @@ View = Class{
 	zoom = function(self, scale)
 		self.scale = scale
 	end,
+    
+    mousePosition = function(self)
+        return self.camera:mousePosition()
+    end,
+    
+    shake = function(self, x, y)
+        if not y then
+            y = x
+        end
+        
+        self.shake_x = x
+        self.shake_y = y
+    end,
 
 	update = function(self)
 		if self.followEntity then
 			local follow_x = self.followEntity.x
 			local follow_y = self.followEntity.y
 
-			self:goToPosition(follow_x, follow_y, true)
+			self:moveToPosition(follow_x, follow_y, true)
 		end
 
 		-- determine the smoother to use 
@@ -126,11 +145,30 @@ View = Class{
 			end
 			self.camera:zoomTo(new_zoom)
 		end
+        
+        -- shake
+        local modifier = 1
+        if self.shake_type == 'smooth' then
+            modifier = 1
+        elseif self.shake_type == 'rigid' then
+            modifier =  (random_range(1, 20)/10)
+        end
+        
+        local shake_x = sinusoidal(-self.shake_x, self.shake_x, self.shake_intensity * modifier, 0)
+        local shake_y = sinusoidal(-self.shake_y, self.shake_y, self.shake_intensity * modifier, 0)
+        
+        if self.shake_y > 0 then
+            self.shake_y = lerp(self.shake_y, 0 ,self._dt*self.shake_falloff)
+        end
+        
+        if self.shake_x > 0 then
+            self.shake_x = lerp(self.shake_x, 0 ,self._dt*self.shake_falloff)
+        end
 
 		-- move the camera
 		local wx = love.graphics.getWidth()/2
 		local wy = love.graphics.getHeight()/2
-		self.camera:lockWindow(self.follow_x, self.follow_y, wx-self.max_distance, wx+self.max_distance,  wy-self.max_distance, wy+self.max_distance, self._smoother)
+		self.camera:lockWindow(self.follow_x + shake_x, self.follow_y + shake_y, wx-self.max_distance, wx+self.max_distance,  wy-self.max_distance, wy+self.max_distance, self._smoother)
 	end,
 
 	attach = function(self)

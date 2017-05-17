@@ -1,6 +1,6 @@
 var nwHELPER = nwPLUGINS['build_helper'];
 
-var new_dirname = __dirname; // do i need this?
+var new_dirname = __dirname;
 
 exports.modules = ['entity', 'image', 'state', 'spritesheet', 'audio', 'script'];
 exports.colors = [
@@ -304,8 +304,10 @@ function build(build_path, objects, callback) {
 	for (var e in objects['entity']) {
 		var ent = objects['entity'][e];
 
-		if (ent.code_path.length > 1)
+		if (ent.code_path.length > 1) {
+			ent.code_path = nwPATH.join('entity', ent.name + '_' + e + '.lua');
 			script_includes += ent.name + " = require \"assets/scripts/"+ent.code_path.replace(/\\/g,"/").replace('.lua','')+"\"\n";
+		}
 	}
 
 	// STATES
@@ -318,8 +320,10 @@ function build(build_path, objects, callback) {
 			first_state = ent.name;
 		}
 
-		if (ent.code_path.length > 1)
+		if (ent.code_path.length > 1) {
+			ent.code_path = nwPATH.join('state', ent.name + '_' + e + '.lua');
 			script_includes += ent.name + " = require \"assets/scripts/"+ent.code_path.replace(/\\/g,"/").replace('.lua','')+"\"\n";
+		}
 	}
 
 	var assets = '';
@@ -327,11 +331,13 @@ function build(build_path, objects, callback) {
 	// SCRIPTS
 	for (var e in objects['script']) {
 		var script = objects['script'][e];
-		var path = script.code_path;
 
-		assets += "function assets:"+script.name+"()\n"+
-				  "\treturn 'assets/scripts/"+path.replace(/\\/g,"/").replace('.lua','')+"'\n"+
-				  "end\n\n";
+		if (script.code_path.length > 1) {
+			script.code_path = nwPATH.join('script', script.name + '_' + e + '.lua');
+			assets += "function assets:"+script.name+"()\n"+
+					  "\treturn 'assets/scripts/"+script.code_path.replace(/\\/g,"/").replace('.lua','')+"'\n"+
+					  "end\n\n";
+		}		
 	}
 
 	// IMAGES
@@ -443,16 +449,16 @@ function build(build_path, objects, callback) {
 		['<FIRST_STATE>', first_state]
 	];
 
-	nwHELPER.copyScript(nwPATH.join(__dirname, 'conf.lua'), nwPATH.join(build_path,'conf.lua'), conf_replacements);
-	nwHELPER.copyScript(nwPATH.join(__dirname, 'assets.lua'), nwPATH.join(build_path,'assets.lua'), assets_replacements);
-	nwHELPER.copyScript(nwPATH.join(__dirname, 'includes.lua'), nwPATH.join(build_path,'includes.lua'), includes_replacements);
+	nwHELPER.copyScript(nwPATH.join(new_dirname, 'conf.lua'), nwPATH.join(build_path,'conf.lua'), conf_replacements);
+	nwHELPER.copyScript(nwPATH.join(new_dirname, 'assets.lua'), nwPATH.join(build_path,'assets.lua'), assets_replacements);
+	nwHELPER.copyScript(nwPATH.join(new_dirname, 'includes.lua'), nwPATH.join(build_path,'includes.lua'), includes_replacements);
 
 	nwMKDIRP(nwPATH.join(build_path, 'assets'), function(){
 		nwHELPER.copyScript(nwPATH.join(b_project.curr_project, "assets", "main.lua"), nwPATH.join(build_path,'main.lua'), main_replacements);
 
 		// move game resources
 		b_project.copyResources(nwPATH.join(build_path, 'assets'));
-		nwFILEX.copy(nwPATH.join(__dirname, "plugins"), nwPATH.join(build_path, 'plugins'), function(err) {
+		nwFILEX.copy(nwPATH.join(new_dirname, "plugins"), nwPATH.join(build_path, 'plugins'), function(err) {
 			if (!err) {
 				nwFILE.unlink(nwPATH.join(build_path, 'assets', 'main.lua'), function(err){
 					// zip up .love (HEY: change line from folder to .love)
