@@ -65,7 +65,7 @@ local function new(x,y, zoom, rot, smoother)
 	zoom = zoom or 1
 	rot  = rot or 0
 	smoother = smoother or camera.smooth.none() -- for locking, see below
-	return setmetatable({x = x, y = y, scale = zoom, rot = rot, smoother = smoother}, camera)
+	return setmetatable({x = x, y = y, scale_x = zoom, scale_y = zoom, rot = rot, smoother = smoother}, camera)
 end
 
 function camera:lookAt(x,y)
@@ -92,13 +92,19 @@ function camera:rotateTo(phi)
 	return self
 end
 
-function camera:zoom(mul)
-	self.scale = self.scale * mul
+function camera:zoom(mul_x, mul_y)
+    if not mul_y then
+        mul_y = mul_x
+    end
+
+	self.scale_x = self.scale_x * mul_x
+    self.scale_y = self.scale_y * mul_y
 	return self
 end
 
-function camera:zoomTo(zoom)
-	self.scale = zoom
+function camera:zoomTo(zoom_x, zoom_y)
+	self.scale_x = zoom_x
+    self.scale_y = zoom_y
 	return self
 end
 
@@ -114,7 +120,7 @@ function camera:attach(x,y,w,h, noclip)
 	local cx,cy = x+w/2, y+h/2
 	love.graphics.push()
 	love.graphics.translate(cx, cy)
-	love.graphics.scale(self.scale)
+	love.graphics.scale(self.scale_x, self.scale_y)
 	love.graphics.rotate(self.rot)
 	love.graphics.translate(-self.x, -self.y)
 end
@@ -151,7 +157,7 @@ function camera:cameraCoords(x,y, ox,oy,w,h)
 	local c,s = cos(self.rot), sin(self.rot)
 	x,y = x - self.x, y - self.y
 	x,y = c*x - s*y, s*x + c*y
-	return x*self.scale + w/2 + ox, y*self.scale + h/2 + oy
+	return x*self.scale_x + w/2 + ox, y*self.scale_y + h/2 + oy
 end
 
 -- camera coordinates to world coordinates
@@ -161,7 +167,7 @@ function camera:worldCoords(x,y, ox,oy,w,h)
 
 	-- x,y = (((x,y) - center) / self.scale):rotated(-self.rot) + (self.x,self.y)
 	local c,s = cos(-self.rot), sin(-self.rot)
-	x,y = (x - w/2 - ox) / self.scale, (y - h/2 - oy) / self.scale
+	x,y = (x - w/2 - ox) / self.scale_x, (y - h/2 - oy) / self.scale_y
 	x,y = c*x - s*y, s*x + c*y
 	return x+self.x, y+self.y
 end
@@ -205,7 +211,7 @@ function camera:lockWindow(x, y, x_min, x_max, y_min, y_max, smoother, ...)
 
 	-- transform displacement to movement in world coordinates
 	local c,s = cos(-self.rot), sin(-self.rot)
-	dx,dy = (c*dx - s*dy) / self.scale, (s*dx + c*dy) / self.scale
+	dx,dy = (c*dx - s*dy) / self.scale_x, (s*dx + c*dy) / self.scale_y
 
 	-- move
 	self:move((smoother or self.smoother)(dx,dy,...))

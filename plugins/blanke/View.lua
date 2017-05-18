@@ -22,8 +22,9 @@ View = Class{
 		self.rot_speed = 5
 		self.rot_type = 'none'
         
-		self.scale = 1
-		self.zoom_speed = 5
+		self.scale_x = 1
+        self.scale_y = 1
+		self.zoom_speed = .5
 		self.zoom_type = 'none'
         
         self.port_x = 0
@@ -37,7 +38,7 @@ View = Class{
         self.shake_intensity = 7
         self.shake_falloff = 2.5
         self.shake_type = 'smooth'
-
+        
 		Signal.register('love.update', function(dt)
 			self._dt = dt
 			if self.auto_update then
@@ -81,8 +82,13 @@ View = Class{
 		self.angle = angle
 	end,
 
-	zoom = function(self, scale)
-		self.scale = scale
+	zoom = function(self, scale_x, scale_y)
+        if not scale_y then
+            scale_y = scale_x
+        end
+        
+        self.scale_x = scale_x
+		self.scale_y = scale_y
 	end,
     
     mousePosition = function(self)
@@ -96,6 +102,11 @@ View = Class{
         
         self.shake_x = x
         self.shake_y = y
+    end,
+    
+    squeezeH = function(self, amt)
+        self.squeeze_x = math.abs(amt)
+        self._squeeze_dt = 0
     end,
 
 	update = function(self)
@@ -134,16 +145,23 @@ View = Class{
 		end
 
 		-- zoom
-		if self.camera.scale ~= self.scale then
-			local new_zoom
+        if self.scale_y == nil then
+            self.scale_y = scale.scale_x
+        end
+        
+		if self.camera.scale_x ~= self.scale_x or self.camera.scale_y ~= self.scale_y then
+			local new_zoom_x = self.scale_x
+            local new_zoom_y = self.scale_y
 			if self.zoom_type == 'none' then
-				new_zoom = self.scale
+				new_zoom_x = self.scale_x
+                new_zoom_y = self.scale_y
 
 			elseif self.zoom_type == 'damped' then
-				new_zoom = lerp(self.camera.scale, self.scale, self.zoom_speed, self._dt)
+				new_zoom_x = lerp(self.camera.scale_x, self.scale_x, self.zoom_speed, self._dt)
+				new_zoom_y = lerp(self.camera.scale_y, self.scale_y, self.zoom_speed, self._dt)
 
 			end
-			self.camera:zoomTo(new_zoom)
+			self.camera:zoomTo(new_zoom_x, new_zoom_y)
 		end
         
         -- shake
@@ -164,16 +182,16 @@ View = Class{
         if self.shake_x > 0 then
             self.shake_x = lerp(self.shake_x, 0 ,self._dt*self.shake_falloff)
         end
-
+        
 		-- move the camera
 		local wx = love.graphics.getWidth()/2
 		local wy = love.graphics.getHeight()/2
 		self.camera:lockWindow(self.follow_x + shake_x, self.follow_y + shake_y, wx-self.max_distance, wx+self.max_distance,  wy-self.max_distance, wy+self.max_distance, self._smoother)
 	end,
 
-	attach = function(self)
+	attach = function(self)   
         self.camera:attach(self.port_x, self.port_y, self.port_width, self.port_height, self.noclip)
-	end,
+    end,
 
 	detach = function(self)
 		self.camera:detach()
