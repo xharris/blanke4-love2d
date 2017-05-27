@@ -11,6 +11,8 @@ Map = Class{
 		self._images = {}
 		self._batches = {}
 
+        self._ids = {}
+        
 		-- layers (tiles, images)
 		self.tilesets = {} 		-- {firstgid = tileset}
 		self.tilelayers = {}	-- {name = layer}
@@ -82,8 +84,14 @@ Map = Class{
 						local offy = (tileset.tileheight < self.data.tileheight) and self.data.tileheight - tileset.tileheight or 0
 
 						local quad = love.graphics.newQuad(frame_x, frame_y, tileset.tilewidth, tileset.tileheight, tileset.imagewidth, tileset.imageheight)
-						self._batches[layer.name][tileset.name]:add(quad, tile_x + offx, tile_y + offy, 0, 1, 1, tileset.tileoffset.y, tileset.tileoffset.x) -- yes offsetx and y are switched
-					end
+						local id = self._batches[layer.name][tileset.name]:add(quad, tile_x + offx, tile_y + offy, 0, 1, 1, tileset.tileoffset.y, tileset.tileoffset.x) -- yes offsetx and y are switched
+					
+                        -- store id
+                        if self._ids[layer.name] == nil then
+                            self._ids[layer.name] = {}
+                        end
+                        self._ids[layer.name][tile_x .. tile_y .. tileset.name] = id
+                    end
 				end
 			end
 
@@ -138,10 +146,32 @@ Map = Class{
 	end,
 
 	--[[
-	getTileXY = function(self, x, y)
+	getTile = function(self, x, y)
 
 	end,
 	]]--
+    
+    removeTile = function(self, x, y, tileset_name, layer_name)
+        local new_x = x - (x % self.data.tilewidth)
+        local new_y = y - (y % self.data.tileheight)
+        local tile_id = new_x .. new_y .. tileset_name
+        
+        -- iterate through batches
+        for batch_name, batch in pairs(self._batches) do
+            if layer_name == nil or layer_name == batch_name then
+                -- iterate through id layers
+                for id_name, id_keys in pairs(self._ids) do
+                    if layer_name == nil or layer_name == id_name then
+                        
+                        if batch[tileset_name] and self._ids[id_name][tile_id] then
+                            batch[tileset_name]:set(self._ids[id_name][tile_id], 0, 0, 0, 0, 0)
+                        end
+                        
+                    end
+                end
+            end
+        end
+    end,
 
 	-- add a collision shape
 	-- str shape: rectangle, polygon, circle, point

@@ -1,4 +1,9 @@
 var nwHELPER = nwPLUGINS['build_helper'];
+<<<<<<< HEAD
+=======
+
+var new_dirname = __dirname;
+>>>>>>> f625438904995180974398fd227bede62ae44b5e
 
 var new_dirname = nwHELPER.nonASAR(__dirname);
 
@@ -305,7 +310,11 @@ function build(build_path, objects, callback) {
 		var ent = objects['entity'][e];
 
 		if (ent.code_path.length > 1) {
+<<<<<<< HEAD
 			ent.code_path = ent.name + '_' + e + '.lua';
+=======
+			ent.code_path = nwPATH.join('entity', ent.name + '_' + e + '.lua');
+>>>>>>> f625438904995180974398fd227bede62ae44b5e
 			script_includes += ent.name + " = require \"assets/scripts/"+ent.code_path.replace(/\\/g,"/").replace('.lua','')+"\"\n";
 		}
 	}
@@ -321,7 +330,11 @@ function build(build_path, objects, callback) {
 		}
 
 		if (ent.code_path.length > 1) {
+<<<<<<< HEAD
 			ent.code_path = ent.name + '_' + e + '.lua';
+=======
+			ent.code_path = nwPATH.join('state', ent.name + '_' + e + '.lua');
+>>>>>>> f625438904995180974398fd227bede62ae44b5e
 			script_includes += ent.name + " = require \"assets/scripts/"+ent.code_path.replace(/\\/g,"/").replace('.lua','')+"\"\n";
 		}
 	}
@@ -333,7 +346,11 @@ function build(build_path, objects, callback) {
 		var script = objects['script'][e];
 
 		if (script.code_path.length > 1) {
+<<<<<<< HEAD
 			script.code_path = script.name + '_' + e + '.lua';
+=======
+			script.code_path = nwPATH.join('script', script.name + '_' + e + '.lua');
+>>>>>>> f625438904995180974398fd227bede62ae44b5e
 			assets += "function assets:"+script.name+"()\n"+
 					  "\treturn 'assets/scripts/"+script.code_path.replace(/\\/g,"/").replace('.lua','')+"'\n"+
 					  "end\n\n";
