@@ -1,7 +1,8 @@
 var nwHELPER = nwPLUGINS['build_helper'];
-var nwDECOMP = require('decompress');
 
-exports.modules = ['entity', 'image', 'state', 'spritesheet', 'audio', 'script'];
+var new_dirname = nwHELPER.nonASAR(__dirname);
+
+exports.modules = ['image', 'spritesheet', 'entity', 'state', 'scene', 'audio', 'script'];
 exports.colors = [
 /*
 	'#ef9a9a', // red 200
@@ -18,8 +19,8 @@ exports.colors = [
 ]
 
 // code editor
-exports.entity_template = nwPATH.join(__dirname, 'entity_template.lua');
-exports.state_template = nwPATH.join(__dirname, 'state_template.lua');
+exports.entity_template = nwPATH.join(new_dirname, 'entity_template.lua');
+exports.state_template = nwPATH.join(new_dirname, 'state_template.lua');
 exports.language = 'lua';
 exports.file_ext = 'lua';
 
@@ -116,6 +117,7 @@ function downloadLove(os='win', callback) {
 				// download version for os
 				var zip_path = getLoveFolder(os)+".zip";
 				b_console.log('downloading ' + nwPATH.basename(zip_path));
+				console.log('to ' + zip_path);
 				nwHELPER.download(getLoveURL(os), zip_path, function(err){
 					// unzip it
 					nwDECOMP(zip_path, getLoveDownFolder(os)).then(function(files){
@@ -142,18 +144,18 @@ function getLoveURL(os='win', version=b_project.getSetting("engine", "version"))
 
 function getLoveDownFolder(os='', version=b_project.getSetting("engine", "version")) {
 	var paths = {
-		'' : nwPATH.join(__dirname, "bin"),
-		'win' : nwPATH.join(__dirname, "bin"),
-		'mac' : nwPATH.join(__dirname, "bin", "love-"+version+"-macosx-x64")
+		'' : nwPATH.join(new_dirname, "bin"),
+		'win' : nwPATH.join(new_dirname, "bin"),
+		'mac' : nwPATH.join(new_dirname, "bin", "love-"+version+"-macosx-x64")
 	}
 	return paths[os];
 }
 
 function getLoveFolder(os='', version=b_project.getSetting("engine", "version")) {
 	var paths = {
-		'' : nwPATH.join(__dirname, "bin"),
-		'win' : nwPATH.join(__dirname, "bin", "love-"+version+"-win32"),
-		'mac' : nwPATH.join(__dirname, "bin", "love-"+version+"-macosx-x64", "love.app")
+		'' : nwPATH.join(new_dirname, "bin"),
+		'win' : nwPATH.join(new_dirname, "bin", "love-"+version+"-win32"),
+		'mac' : nwPATH.join(new_dirname, "bin", "love-"+version+"-macosx-x64", "love.app")
 	}
 	return paths[os];
 }
@@ -264,7 +266,7 @@ exports.loaded = function() {
 		nwFILE.stat(nwPATH.join(b_project.curr_project, "assets", "main.lua"), function(err, stat){
 			if (err || !stat.isFile()) {
 				var html_code = nwFILEX.copy(
-					nwPATH.join(__dirname, 'main.lua'),
+					nwPATH.join(new_dirname, 'main.lua'),
 					nwPATH.join(b_project.curr_project, "assets", "main.lua")
 				);
 			}
@@ -302,8 +304,10 @@ function build(build_path, objects, callback) {
 	for (var e in objects['entity']) {
 		var ent = objects['entity'][e];
 
-		if (ent.code_path.length > 1)
+		if (ent.code_path.length > 1) {
+			ent.code_path = ent.name + '_' + e + '.lua';
 			script_includes += ent.name + " = require \"assets/scripts/"+ent.code_path.replace(/\\/g,"/").replace('.lua','')+"\"\n";
+		}
 	}
 
 	// STATES
@@ -316,8 +320,10 @@ function build(build_path, objects, callback) {
 			first_state = ent.name;
 		}
 
-		if (ent.code_path.length > 1)
+		if (ent.code_path.length > 1) {
+			ent.code_path = ent.name + '_' + e + '.lua';
 			script_includes += ent.name + " = require \"assets/scripts/"+ent.code_path.replace(/\\/g,"/").replace('.lua','')+"\"\n";
+		}
 	}
 
 	var assets = '';
@@ -325,11 +331,13 @@ function build(build_path, objects, callback) {
 	// SCRIPTS
 	for (var e in objects['script']) {
 		var script = objects['script'][e];
-		var path = script.code_path;
 
-		assets += "function assets:"+script.name+"()\n"+
-				  "\treturn 'assets/scripts/"+path.replace(/\\/g,"/").replace('.lua','')+"'\n"+
-				  "end\n\n";
+		if (script.code_path.length > 1) {
+			script.code_path = script.name + '_' + e + '.lua';
+			assets += "function assets:"+script.name+"()\n"+
+					  "\treturn 'assets/scripts/"+script.code_path.replace(/\\/g,"/").replace('.lua','')+"'\n"+
+					  "end\n\n";
+		}		
 	}
 
 	// IMAGES
@@ -441,16 +449,16 @@ function build(build_path, objects, callback) {
 		['<FIRST_STATE>', first_state]
 	];
 
-	nwHELPER.copyScript(nwPATH.join(__dirname, 'conf.lua'), nwPATH.join(build_path,'conf.lua'), conf_replacements);
-	nwHELPER.copyScript(nwPATH.join(__dirname, 'assets.lua'), nwPATH.join(build_path,'assets.lua'), assets_replacements);
-	nwHELPER.copyScript(nwPATH.join(__dirname, 'includes.lua'), nwPATH.join(build_path,'includes.lua'), includes_replacements);
+	nwHELPER.copyScript(nwPATH.join(new_dirname, 'conf.lua'), nwPATH.join(build_path,'conf.lua'), conf_replacements);
+	nwHELPER.copyScript(nwPATH.join(new_dirname, 'assets.lua'), nwPATH.join(build_path,'assets.lua'), assets_replacements);
+	nwHELPER.copyScript(nwPATH.join(new_dirname, 'includes.lua'), nwPATH.join(build_path,'includes.lua'), includes_replacements);
 
 	nwMKDIRP(nwPATH.join(build_path, 'assets'), function(){
 		nwHELPER.copyScript(nwPATH.join(b_project.curr_project, "assets", "main.lua"), nwPATH.join(build_path,'main.lua'), main_replacements);
 
 		// move game resources
 		b_project.copyResources(nwPATH.join(build_path, 'assets'));
-		nwFILEX.copy(nwPATH.join(__dirname, "plugins"), nwPATH.join(build_path, 'plugins'), function(err) {
+		nwFILEX.copy(nwPATH.join(new_dirname, "plugins"), nwPATH.join(build_path, 'plugins'), function(err) {
 			if (!err) {
 				nwFILE.unlink(nwPATH.join(build_path, 'assets', 'main.lua'), function(err){
 					// zip up .love (HEY: change line from folder to .love)
