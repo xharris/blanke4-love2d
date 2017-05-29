@@ -29,9 +29,7 @@ end
 -- saves the currently loaded file
 Save.save = function()
     local json_data = json.encode(Save.file_data)
-    print(json_data)
     local success = love.filesystem.write(Save.file_path, json_data)
-    print(success)
 end
 
 -- check if a key exists (usually before reading)

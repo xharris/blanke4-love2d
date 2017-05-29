@@ -1,8 +1,9 @@
 var nwHELPER = nwPLUGINS['build_helper'];
 
-var new_dirname = __dirname;
+var new_dirname = __dirname; // nwHELPER.nonASAR(__dirname)
 
-exports.modules = ['entity', 'image', 'state', 'spritesheet', 'audio', 'script', 'scene'];
+exports.modules = ['image', 'spritesheet', 'entity', 'state', 'scene', 'audio', 'script'];
+
 exports.colors = [
 /*
 	'#ef9a9a', // red 200
