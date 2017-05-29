@@ -1,3 +1,7 @@
+game_name = "<GAME_NAME>"
+
+require "plugins.json.json"
+
 require 'plugins.blanke.Globals'
 require 'plugins.blanke.Util'
 Signal = require 'plugins.hump.signal'
@@ -42,10 +46,12 @@ HC = require 'plugins.HC'
 <INCLUDES>
 
 assets = require 'assets'
+Save = require 'plugins.blanke.Save'
 _Entity = require 'plugins.blanke.Entity'
 Map = require 'plugins.blanke.Map'
 View = require 'plugins.blanke.View'
 Effect = require 'plugins.blanke.Effect'
+Dialog = require 'plugins.blanke.Dialog'
 
 Signal.register('love.load', function()
 	-- register gamestates
@@ -58,3 +64,17 @@ end)
 Signal.register('love.update', function(dt)
     updateGlobals(dt)
 end)
+
+--[[
+Signal.register('love.mousereleased', function(x, y, button, istouch)
+    local mouse_collisions = HC.collisions(_mouse_hitbox)
+    for other, sep_vec in pairs(mouse_collisions) do
+        print('clicked', other.tag)
+        local parent_obj = other.parent_obj
+        local fn = parent_obj.onClick[other.tag]
+        if (fn) then
+            fn(x, y, button, istouch)
+        end
+    end
+end)
+]]--

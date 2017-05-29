@@ -2,7 +2,7 @@ var nwHELPER = nwPLUGINS['build_helper'];
 
 var new_dirname = __dirname;
 
-exports.modules = ['entity', 'image', 'state', 'spritesheet', 'audio', 'script'];
+exports.modules = ['entity', 'image', 'state', 'spritesheet', 'audio', 'script', 'scene'];
 exports.colors = [
 /*
 	'#ef9a9a', // red 200
@@ -191,7 +191,7 @@ exports.settings = {
 		{"type" : "bool", "name" : "pause on lose focus", "default" : "true", "tooltip": "pause the game if the user minimizes the window or switches to a different window"}
 	],*/
 	"misc" : [
-		{"type" : "text", "name" : "identity", "default" : "nil", "tooltip": "The name of the save directory"},
+		{"type" : "text", "name" : "identity", "default" : "-", "tooltip": "The name of the save directory"},
 		{"type" : "text", "name" : "version", "default" : "0.10.2", "tooltip": "The LÖVE version this game was made for"},
 		{"type" : "bool", "name" : "console", "default" : "false", "tooltip": "Attach a console (Windows only)"},
 		{"type" : "bool", "name" : "accelerometer joystick", "default" : "true", "tooltip": "Enable the accelerometer on iOS and Android by exposing it as a Joystick"},
@@ -271,6 +271,10 @@ exports.loaded = function() {
 				);
 			}
 		});
+        
+        // change identity value (setting)
+        if (b_project.getSetting("engine", "identity") == "nil")
+            b_project.setSetting("engine",  "identity", nwPATH.basename(b_project.bip_path));
 	});
 
 	document.addEventListener("filedrop", function(e){
@@ -446,7 +450,8 @@ function build(build_path, objects, callback) {
 
 	includes_replacements = [
 		['<INCLUDES>', script_includes],
-		['<FIRST_STATE>', first_state]
+		['<FIRST_STATE>', first_state],
+        ['<GAME_NAME>', b_project.getSetting("engine", "name")]
 	];
 
 	nwHELPER.copyScript(nwPATH.join(new_dirname, 'conf.lua'), nwPATH.join(build_path,'conf.lua'), conf_replacements);

@@ -47,8 +47,9 @@ _Entity = Class{
 	collisionStopY = nil,	
 
 	onCollision = {["*"] = function() end},
-
-	update = function(self, dt)
+    onClick = {["*"] = function() end},
+    
+    update = function(self, dt)
 		-- bootstrap sprite:goToFrame()
 		if not self.sprite then
 			self.sprite = {}
@@ -104,7 +105,7 @@ _Entity = Class{
 			if self.shapes[name] ~= nil then
 				local collisions = HC.collisions(self.shapes[name])
 				for other, separating_vector in pairs(collisions) do
-
+                
 					-- collision action functions
 					self.collisionStopX = function(self)
 						for name, shape in pairs(self.shapes) do
@@ -132,7 +133,7 @@ _Entity = Class{
 				end
 			end
 		end
-
+        
 		-- move all shapes
 		for s, shape in pairs(self.shapes) do
 			shape:move(dx*dt, dy*dt)
@@ -291,6 +292,7 @@ _Entity = Class{
 		new_shape.xoffset = args[1] - xoffset
 		new_shape.yoffset = args[2] - yoffset
 		new_shape.tag = tag
+        new_shape.parent_ent = self
 		self.shapes[name] = new_shape
 
 		HC.register(new_shape)
@@ -325,7 +327,15 @@ _Entity = Class{
 	move_towards_point = function(self, x, y, speed)
 		self.direction = math.deg(math.atan2(y - self.y, x - self.x))
 		self.speed = speed
-	end
+	end,
+    
+    -- checks if the point is inside the current sprite
+    contains_point = function(self, x, y)
+        if x >= self.x and y >= self.y and x < self.x + self.sprite_width and  y < self.y + self.sprite_height then
+            return true
+        end
+        return false
+    end
 }
 
 return _Entity
