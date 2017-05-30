@@ -39,12 +39,15 @@ View = Class{
         self.shake_falloff = 2.5
         self.shake_type = 'smooth'
         
+        table.insert(game.view, self)
+        --[[
 		Signal.register('love.update', function(dt)
 			self._dt = dt
 			if self.auto_update then
 				self:update()
 			end
 		end)
+        ]]--
 	end,
 
 	follow = function(self, entity)

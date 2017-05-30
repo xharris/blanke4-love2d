@@ -1,9 +1,12 @@
 game_name = "<GAME_NAME>"
+game = {entity={}, view={}, map={}}
 
 require "plugins.json.json"
 
 require 'plugins.blanke.Globals'
 require 'plugins.blanke.Util'
+require 'plugins.blanke.Debug'
+
 Signal = require 'plugins.hump.signal'
 Gamestate = require 'plugins.hump.gamestate'
 
@@ -20,6 +23,14 @@ Gamestate.run = function(to, ...)
 	    dt = math.min(dt, min_dt)
 	    next_time = next_time + min_dt
 		
+        --Signal.emit('love.update', dt)
+        for i_arr, arr in pairs(game) do
+            for i_e, e in ipairs(arr) do
+                if e.auto_update then
+                    e:update(dt)
+                end
+            end
+        end
 		old_update(dt) 
 	end
 

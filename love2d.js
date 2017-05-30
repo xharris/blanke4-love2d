@@ -304,33 +304,42 @@ function build(build_path, objects, callback) {
 		else 
 			remove_plugins.push(plugin.name);
 	}
-
-	// ENTITIES
-	for (var e in objects['entity']) {
-		var ent = objects['entity'][e];
-
-		if (ent.code_path.length > 1) {
-			ent.code_path = nwPATH.join('entity', ent.name + '_' + e + '.lua');
-			script_includes += ent.name + " = require \"assets/scripts/"+ent.code_path.replace(/\\/g,"/").replace('.lua','')+"\"\n";
-		}
-	}
-
-	// STATES
+    
+    var arr_types = ["entity", "state"];
+    
 	var state_init = '';
-	var first_state = '';
-	for (var e in objects['state']) {
-		var ent = objects['state'][e];
-
-		if (first_state === '') {
-			first_state = ent.name;
-		}
-
-		if (ent.code_path.length > 1) {
-			ent.code_path = nwPATH.join('state', ent.name + '_' + e + '.lua');
-			script_includes += ent.name + " = require \"assets/scripts/"+ent.code_path.replace(/\\/g,"/").replace('.lua','')+"\"\n";
-		}
-	}
-
+	var first_state = ''; 
+    // ALL OBJECT SCRIPT INCLUDES
+    for (var t = 0; t < arr_types.length; t++) {
+        var type = arr_types[t];
+        for (var o in objects[type]) {
+            var obj = objects[type][o];
+            
+            if (type === "state" && first_state === "") {
+                first_state = obj.name;
+            }
+            
+             if (obj.code_path.length > 1) {
+                obj.code_path = nwPATH.join(type, obj.name + '_' + o + '.lua');
+                script_includes += obj.name + " = require \"assets/scripts/"+obj.code_path.replace(/\\/g,"/").replace('.lua','')+"\"\n";
+            }
+            
+        }
+    }
+           
+    // ALL OBJECTS ARRAY
+    var obj_array = "";
+    for (var t = 0; t < arr_types.length; t++) {
+        var type = arr_types[t];
+        obj_array += "game." + type + " = {";
+        for (var o in objects[type]) {
+            var obj = objects[type][o];
+            obj_array += obj.name + ", ";
+        }
+        obj_array = obj_array.slice(0, -2);
+        obj_array += "}\n";
+    }
+    
 	var assets = '';
 
 	// SCRIPTS
@@ -450,9 +459,10 @@ function build(build_path, objects, callback) {
 	];
 
 	includes_replacements = [
+        ['<OBJ_ARRAY>', obj_array],
 		['<INCLUDES>', script_includes],
 		['<FIRST_STATE>', first_state],
-        ['<GAME_NAME>', b_project.getSetting("engine", "name")]
+        ['<GAME_NAME>', b_project.getSetting("engine", "title")]
 	];
 
 	nwHELPER.copyScript(nwPATH.join(new_dirname, 'conf.lua'), nwPATH.join(build_path,'conf.lua'), conf_replacements);

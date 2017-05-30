@@ -8,6 +8,7 @@ _Entity = Class{
 	-- x and y coordinate of sprite
 	x = 0,	
 	y = 0,
+    auto_update = AUTO_UPDATE,
 
 	-- sprite/animation variables
 	_sprite_prev = '', 		-- previously used sprite
@@ -48,6 +49,17 @@ _Entity = Class{
 
 	onCollision = {["*"] = function() end},
     onClick = {["*"] = function() end},
+    
+    on_include = function(self)
+        table.insert(game.entity, self)
+        --[[
+        Signal.register('love.update', function(dt)
+			if self.auto_update then
+				self:update(dt)
+			end
+		end)
+        ]]--
+    end,
     
     update = function(self, dt)
 		-- bootstrap sprite:goToFrame()

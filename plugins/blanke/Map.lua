@@ -143,6 +143,8 @@ Map = Class{
 				end
 			end
 		end -- for loop
+        
+        table.insert(game.map, self)
 	end,
 
 	--[[

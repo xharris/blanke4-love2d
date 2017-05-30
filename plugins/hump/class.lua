@@ -40,6 +40,9 @@ local function include_helper(to, from, seen)
 			to[k] = include_helper({}, v, seen)
 		end
 	end
+    
+    if to.on_include then to:on_include(to) end
+    
 	return to
 end
 
@@ -76,7 +79,7 @@ local function new(class)
 	-- constructor call
 	return setmetatable(class, {__call = function(c, ...)
 		local o = setmetatable({}, c)
-		o:init(...)
+        o:init(...)
 		return o
 	end})
 end
