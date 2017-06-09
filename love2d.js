@@ -162,7 +162,9 @@ function getLoveFolder(os='', version=b_project.getSetting("engine", "version"))
 }
 
 // only works for windows atm
-function runLove(love_path, show_cmd=b_project.getSetting("engine","console")) {
+function runLove(love_path, show_cmd) {
+    show_cmd = ifndef(show_cmd, b_project.getSetting("engine","console"));
+    
 	downloadLove('win', function(){
 		var cmd = '';
 		if (show_cmd) 
@@ -185,8 +187,7 @@ exports.run = function(objects) {
 exports.settings = {
 	"includes" : [
 		{"type" : "bool", "name" : "printr", "default" : "false", "tooltip": "Print tables using print_r", "include": 'require "plugins.printr"'},
-		{"type" : "bool", "name" : "luasocket", "default" : "false", "tooltip": "helper for http requests", "include": 'require "plugins.luasocket"'},
-		{"type" : "bool", "name" : "enet", "default" : "false", "tooltip": "helper for multiplayer networking", "include": 'require "plugins.enet"'}
+		{"type" : "bool", "name" : "luasocket", "default" : "false", "tooltip": "helper for http requests", "include": 'require "plugins.luasocket"'}
 	],/*
 	"blanke helpers" : [
 		{"type" : "bool", "name" : "pause on lose focus", "default" : "true", "tooltip": "pause the game if the user minimizes the window or switches to a different window"}
@@ -260,18 +261,28 @@ exports.library_const = [
 	}
 ]
 
+function copyMain() {
+    if (b_project.getData("engine") !== "love2d") return;
+    // copy main.lua template to project folder
+    console.log("checking")
+    nwFILE.stat(nwPATH.join(b_project.curr_project, "assets", "main.lua"), function(err, stat){
+        if (err || !stat.isFile()) {
+            console.log("copying ", nwPATH.join(new_dirname, 'main.lua'))
+            var html_code = nwFILEX.copy(
+                nwPATH.join(new_dirname, 'main.lua'),
+                nwPATH.join(b_project.curr_project, "assets", "main.lua")
+            );
+        }
+    });
+}
+
 exports.loaded = function() {
+    document.addEventListener("project.new", function(e){
+        copyMain();
+    });
+    
 	document.addEventListener("project.open", function(e){
-		if (b_project.getData("engine") !== "love2d") return;
-		// copy main.lua template to project folder
-		nwFILE.stat(nwPATH.join(b_project.curr_project, "assets", "main.lua"), function(err, stat){
-			if (err || !stat.isFile()) {
-				var html_code = nwFILEX.copy(
-					nwPATH.join(new_dirname, 'main.lua'),
-					nwPATH.join(b_project.curr_project, "assets", "main.lua")
-				);
-			}
-		});
+		copyMain();
         
         // change identity value (setting)
         if (b_project.getSetting("engine", "identity") == "nil")

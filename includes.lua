@@ -36,6 +36,7 @@ Gamestate.run = function(to, ...)
 
 	local old_draw = Gamestate.draw
 	Gamestate.draw = function()
+        Debug.draw()
 		old_draw()
 
 	    local cur_time = love.timer.getTime()
@@ -57,6 +58,7 @@ HC = require 'plugins.HC'
 <INCLUDES>
 
 assets = require 'assets'
+Net = require 'plugins.blanke.Net'
 Save = require 'plugins.blanke.Save'
 _Entity = require 'plugins.blanke.Entity'
 Map = require 'plugins.blanke.Map'

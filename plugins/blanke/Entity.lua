@@ -1,5 +1,5 @@
 local assets = require "assets"
-
+ 
 _Entity = Class{
 	_images = {},		
 	_sprites = {}, 			-- is actually the animations

@@ -1,3 +1,7 @@
+--[[
+local sin = math.sin
+local pi = math.pi
+]]
 function hex2rgb(hex)
     hex = hex:gsub("#","")
     if(string.len(hex) == 3) then
@@ -12,7 +16,7 @@ function lerp(a,b,amt)
 end
 
 function ifndef(var_check, default)
-	if var_check then
+	if var_check ~= nil then
 		return var_check
 	end
 	return default
