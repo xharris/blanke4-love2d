@@ -172,7 +172,9 @@ function runLove(love_path, show_cmd) {
 		else 
 			cmd = '\"'+nwPATH.join(getLoveFolder('win'), "love.exe")+'\" \"'+love_path+'\"';
 		
-		nwCHILD.exec(cmd);
+        var run_count = b_project.getSetting("engine", "instance count");
+        for (var r = 0; r < run_count; r++)
+            nwCHILD.exec(cmd);
 	});
 }
 
@@ -185,6 +187,9 @@ exports.run = function(objects) {
 } 
 
 exports.settings = {
+    "general" : [
+        {"type" : "number", "name" : "instance count", "default" : 1, "min" : 1, "max" :  1000000, "tooltip": "Number of instances of the game to run"}
+	],
 	"includes" : [
 		{"type" : "bool", "name" : "printr", "default" : "false", "tooltip": "Print tables using print_r", "include": 'require "plugins.printr"'},
 		{"type" : "bool", "name" : "luasocket", "default" : "false", "tooltip": "helper for http requests", "include": 'require "plugins.luasocket"'}
@@ -264,7 +269,6 @@ exports.library_const = [
 function copyMain() {
     if (b_project.getData("engine") !== "love2d") return;
     // copy main.lua template to project folder
-    console.log("checking")
     nwFILE.stat(nwPATH.join(b_project.curr_project, "assets", "main.lua"), function(err, stat){
         if (err || !stat.isFile()) {
             console.log("copying ", nwPATH.join(new_dirname, 'main.lua'))
@@ -434,7 +438,7 @@ function build(build_path, objects, callback) {
 			var value = b_project.getSetting("engine", setting)
 			var category = cat;
 
-			if (!["includes", "blanke helpers"].includes(category)) {
+			if (!["includes", "blanke helpers", "general"].includes(category)) {
 				if (category === "misc") {
 					category = "";
 				} else {

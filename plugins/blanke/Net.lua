@@ -2,57 +2,76 @@ Net = {
     entity_update_rate = 500, -- m/s
     
     is_init = false,
-    host = nil,
+    client = nil,
     server = nil,
     
-    address = "localhost:12345",
+    onReceive = nil,
+    onConnect = nil,
+    onDisconnect = nil,
     
-    init = function(address)
+    address = "localhost",
+    port = 12345,
+    
+    init = function(address, port)
         require "plugins.lube"
         
-        Net.address = ifndef(address, "localhost:12345")
+        Net.address = ifndef(address, "localhost")
         Debug.log(Net.address)
         
-        if not is_init then      
+        if not is_init then        
             Signal.register("love.update", function(dt)
-                if Net.host then
-                    local evt = Net.host:service(100)
-                    
-                    for i_evt, event in ipairs(evt) do
-                        if event.type == "receive" then
-                            Debug.log("Got message: ", event.data, event.peer)
-                            event.peer:send( "pong" )
-                        elseif event.type == "connect" then
-                            Debug.log(event.peer, "connected.")
-                        elseif event.type == "disconnect" then
-                            Debug.log(event.peer, "disconnected.")
-                        else
-                            Debug.log(dt)
-                        end
-                        event = host:service()
-                    end
-                    
-                end
+                if Net.server then Net.server:update(dt) end
+                if Net.client then Net.client:update(dt) end
             end) -- Signal.register update
         end -- not is_init
         
     end,
 
     -- returns "Server" object
-    host = function(address)
-        Net.init(address)
+    host = function(address, port)
+        Net.init(address, port)      
+
+        Net.server = lube.udpServer()
         
-        Net.host = enet.host_create(Net.address)
+        Net.server.callbacks.connect = Net.onConnect
+        Net.server.callbacks.disconnect = Net.onDisconnect
+        Net.server.callbacks.recv = Net.onReceive
+        
+        Net.server.handshake = "welcome ppl"
+        
+        Net.server:listen(Net.port)
         -- room_create() -- default room
     end,
     
     -- returns "Client" object
-    join = function(address) 
-        Net.init(address)
+    join = function(address, port) 
+        Net.init(address, port)
+        Net.client = lube.udpClient()
         
-        Net.host = enet.host_create()
-        Net.server = Net.host:connect(Net.address)
+        Net.client.callbacks.recv = Net.onReceive
+        
+        Net.client.handshake = "join"
+        
+        Net.client:connect(Net.address, Net.port)
+        
+        --Net.client:send("hello") -- server always receives and prints this (see above)
+        return success
+    end,
+    
+    --[[
+    onConnect = function(ip, port)
+        Debug.log("connect:" ..  ip .. " " .. port) -- always prints id
+    end,
+    
+    onDisconnect = function(ip, port) 
+        Debug.log("disconnect:" .. ip " " .. port)
+    end,
+    
+    onReceive = function(data, ip, port)
+        Debug.log("received (" .. ip .. "):" .. data)
     end
+    ]]
+    
     --[[
     room_list = function() end,
     room_create
