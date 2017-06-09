@@ -4,7 +4,7 @@ Dialog = Class{
         self.y = y
         self.width = ifndef(width, game_width - x)
         
-        self.type = "normal"
+        self.type = "normal" -- normal, typewriter
         self.font_size = 12
         self.text_speed = 20
         self.align = "left"

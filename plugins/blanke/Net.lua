@@ -5,9 +5,9 @@ Net = {
     client = nil,
     server = nil,
     
-    onReceive = nil,
-    onConnect = nil,
-    onDisconnect = nil,
+    onReceive = nil,    -- data
+    onConnect = nil,    -- id
+    onDisconnect = nil, -- id
     
     address = "localhost",
     port = 12345,
@@ -28,14 +28,14 @@ Net = {
     end,
 
     -- returns "Server" object
-    host = function(address, port)
-        Net.init(address, port)      
+    host = function(port)
+        Net.init(Net.address, port)      
 
         Net.server = lube.udpServer()
         
-        Net.server.callbacks.connect = Net.onConnect
-        Net.server.callbacks.disconnect = Net.onDisconnect
-        Net.server.callbacks.recv = Net.onReceive
+        Net.server.callbacks.connect = Net._onConnect
+        Net.server.callbacks.disconnect = Net._onDisconnect
+        Net.server.callbacks.recv = Net._onReceive
         
         Net.server.handshake = "welcome ppl"
         
@@ -48,7 +48,7 @@ Net = {
         Net.init(address, port)
         Net.client = lube.udpClient()
         
-        Net.client.callbacks.recv = Net.onReceive
+        Net.client.callbacks.recv = Net._onReceive
         
         Net.client.handshake = "join"
         
@@ -58,19 +58,17 @@ Net = {
         return success
     end,
     
-    --[[
-    onConnect = function(ip, port)
-        Debug.log("connect:" ..  ip .. " " .. port) -- always prints id
+    _onConnect = function(id)
+        if Net.onConnect then Net.onConnect(id) end
     end,
     
-    onDisconnect = function(ip, port) 
-        Debug.log("disconnect:" .. ip " " .. port)
+    _onDisconnect = function(id) 
+        if Net.onDisconnect then Net.onDisconnect(id) end
     end,
     
-    onReceive = function(data, ip, port)
-        Debug.log("received (" .. ip .. "):" .. data)
+    _onReceive = function(data)
+        if Net.onReceive then Net.onReceive(data) end
     end
-    ]]
     
     --[[
     room_list = function() end,
