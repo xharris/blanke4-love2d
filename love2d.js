@@ -85,20 +85,24 @@ exports.targets = {
 
 					// copy love.app and rename it
 					build_path = nwPATH.join(build_path, b_project.getSetting("engine", "title")+'.app');
-					nwFILEX.copy(nwPATH.join(getLoveFolder('mac'), "love.app"), build_path, function(){
+					nwFILEX.copy(nwPATH.join(getLoveFolder('mac')), build_path, function(){
 						// create .love and copy it into app/Contents/Resources/
 						buildLove(objects, function(path){
-							nwFILEX.copy(path, nwPATH.join(build_path, 'Contents', 'Resources', b_project.getSetting("engine", "title")+'.love'));
+							nwFILEX.copy(path, nwPATH.join(build_path, 'Contents', 'Resources', b_project.getSetting("engine", "title")+'.love'), function(err){
+								if (err) return;
 
-							// modify app/Contents/Info.plist			
-							plist_repl = [
-								['<COMPANY>', 'Made with BlankE'],
-								['<TITLE>', b_project.getSetting("engine", "title")]
-							];
-							plist_path = nwPATH.join(build_path, 'Contents', 'Info.plist');
-							nwHELPER.copyScript(plist_path, plist_path, plist_repl);
+								//
 
-							eSHELL.openItem(nwPATH.dirname(build_path));
+								// modify app/Contents/Info.plist			
+								plist_repl = [
+									['<COMPANY>', 'Made with BlankE'],
+									['<TITLE>', b_project.getSetting("engine", "title")]
+								];
+								plist_path = nwPATH.join(build_path, 'Contents', 'Info.plist');
+								nwHELPER.copyScript(plist_path, plist_path, plist_repl);
+
+								eSHELL.openItem(nwPATH.dirname(build_path));
+							});
 						});
 					});
 
@@ -165,13 +169,27 @@ function getLoveFolder(os='', version=b_project.getSetting("engine", "version"))
 function runLove(love_path, show_cmd) {
     show_cmd = ifndef(show_cmd, b_project.getSetting("engine","console"));
     
-	downloadLove('win', function(){
+    var os = nwOS.type();
+    if (os === "Windows_NT") os = 'win';
+    if (os === "Darwin") os = 'mac';
+
+	downloadLove(os, function(){
 		var cmd = '';
-		if (show_cmd) 
-			cmd = 'start cmd.exe /K \"\"'+nwPATH.join(getLoveFolder('win'), "love.exe")+'\" \"'+love_path+'\"\"';
-		else 
-			cmd = '\"'+nwPATH.join(getLoveFolder('win'), "love.exe")+'\" \"'+love_path+'\"';
-		
+
+		// run on WINDOWS
+		if (os === 'win') {
+			if (show_cmd) 
+				cmd = 'start cmd.exe /K \"\"'+nwPATH.join(getLoveFolder('win'), "love.exe")+'\" \"'+love_path+'\"\"';
+			else 
+				cmd = '\"'+nwPATH.join(getLoveFolder('win'), "love.exe")+'\" \"'+love_path+'\"';
+		}
+
+		// run on MAC
+		if (os === 'mac') {
+			cmd = '\"'+nwPATH.join(getLoveFolder('mac'),"Contents","MacOS","love")+'\" \"'+love_path+'\"';
+		}
+		console.log(cmd);
+
         var run_count = b_project.getSetting("engine", "instance count");
         for (var r = 0; r < run_count; r++)
             nwCHILD.exec(cmd);
