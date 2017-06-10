@@ -52,13 +52,12 @@ _Entity = Class{
     
     on_include = function(self)
         table.insert(game.entity, self)
-        --[[
+
         Signal.register('love.update', function(dt)
 			if self.auto_update then
 				self:update(dt)
 			end
 		end)
-        ]]--
     end,
     
     update = function(self, dt)

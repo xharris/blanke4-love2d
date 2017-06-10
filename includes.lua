@@ -65,29 +65,18 @@ Map = require 'plugins.blanke.Map'
 View = require 'plugins.blanke.View'
 Effect = require 'plugins.blanke.Effect'
 Dialog = require 'plugins.blanke.Dialog'
+Input = require 'plugins.blanke.Input'
 
-Signal.register('love.load', function()
+function love.load()
 	-- register gamestates
     updateGlobals(0)
 	if "<FIRST_STATE>" ~= "" then
 		Gamestate.run(<FIRST_STATE>)
 	end
-end)
+  
+end
 
-Signal.register('love.update', function(dt)
+function love.update(dt)
     updateGlobals(dt)
-end)
-
---[[
-Signal.register('love.mousereleased', function(x, y, button, istouch)
-    local mouse_collisions = HC.collisions(_mouse_hitbox)
-    for other, sep_vec in pairs(mouse_collisions) do
-        print('clicked', other.tag)
-        local parent_obj = other.parent_obj
-        local fn = parent_obj.onClick[other.tag]
-        if (fn) then
-            fn(x, y, button, istouch)
-        end
-    end
-end)
-]]--
+    
+end

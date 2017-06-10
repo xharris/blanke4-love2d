@@ -186,9 +186,11 @@ function runLove(love_path, show_cmd) {
 
 		// run on MAC
 		if (os === 'mac') {
-			cmd = '\"'+nwPATH.join(getLoveFolder('mac'),"Contents","MacOS","love")+'\" \"'+love_path+'\"';
+			if (show_cmd)
+				cmd = "echo \""+nwPATH.join(getLoveFolder('mac'),"Contents","MacOS","love")+"\" \""+love_path+"\" > runlove.command; chmod +x runlove.command; open runlove.command"
+			else
+				cmd = '\"'+nwPATH.join(getLoveFolder('mac'),"Contents","MacOS","love")+'\" \"'+love_path+'\"';
 		}
-		console.log(cmd);
 
         var run_count = b_project.getSetting("engine", "instance count");
         for (var r = 0; r < run_count; r++)
