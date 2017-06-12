@@ -37,6 +37,13 @@ love.graphics.resetColor = function()
 	love.graphics.setColor(255, 255, 255, 255)
 end
 
-function string.starts(String,Start)
-   return string.sub(String,1,string.len(Start))==Start
+function string:starts(Start)
+    return string.sub(self,1,string.len(Start))==Start
+end
+
+function string:split(sep)
+   local sep, fields = sep or ":", {}
+   local pattern = string.format("([^%s]+)", sep)
+   self:gsub(pattern, function(c) fields[#fields+1] = c end)
+   return fields
 end

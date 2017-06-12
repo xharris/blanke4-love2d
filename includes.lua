@@ -1,14 +1,31 @@
 game_name = "<GAME_NAME>"
-game = {entity={}, view={}, map={}}
+game = {entity={}, view={}, map={}, input={}}
+
+function _iterateGameGroup(group, func)
+    for i, obj in ipairs(game[group]) do
+        func(obj)
+    end
+end
 
 require "plugins.json.json"
+
+Class = require 'plugins.hump.class'
 
 require 'plugins.blanke.Globals'
 require 'plugins.blanke.Util'
 require 'plugins.blanke.Debug'
 
+Input = require 'plugins.blanke.Input'
 Signal = require 'plugins.hump.signal'
 Gamestate = require 'plugins.hump.gamestate'
+
+Net = require 'plugins.blanke.Net'
+Save = require 'plugins.blanke.Save'
+_Entity = require 'plugins.blanke.Entity'
+Map = require 'plugins.blanke.Map'
+View = require 'plugins.blanke.View'
+Effect = require 'plugins.blanke.Effect'
+Dialog = require 'plugins.blanke.Dialog'
 
 -- prevents updating while window is being moved (would mess up collisions)
 max_fps = 120
@@ -23,14 +40,6 @@ Gamestate.run = function(to, ...)
 	    dt = math.min(dt, min_dt)
 	    next_time = next_time + min_dt
 		
-        --Signal.emit('love.update', dt)
-        for i_arr, arr in pairs(game) do
-            for i_e, e in ipairs(arr) do
-                if e.auto_update then
-                    e:update(dt)
-                end
-            end
-        end
 		old_update(dt) 
 	end
 
@@ -48,24 +57,16 @@ Gamestate.run = function(to, ...)
 	end
 end
 
-Class = require 'plugins.hump.class'
 Timer = require 'plugins.hump.timer'
 Vector = require 'plugins.hump.vector'
 Camera = require 'plugins.hump.camera'
 anim8 = require 'plugins.anim8'
 HC = require 'plugins.HC'
 
-<INCLUDES>
 
 assets = require 'assets'
-Net = require 'plugins.blanke.Net'
-Save = require 'plugins.blanke.Save'
-_Entity = require 'plugins.blanke.Entity'
-Map = require 'plugins.blanke.Map'
-View = require 'plugins.blanke.View'
-Effect = require 'plugins.blanke.Effect'
-Dialog = require 'plugins.blanke.Dialog'
-Input = require 'plugins.blanke.Input'
+
+<INCLUDES>
 
 function love.load()
 	-- register gamestates
@@ -79,4 +80,37 @@ end
 function love.update(dt)
     updateGlobals(dt)
     
+    Net.update(dt)
+    
+    for i_arr, arr in pairs(game) do
+        for i_e, e in ipairs(arr) do
+            if e.auto_update then
+                e:update(dt)
+            end
+        end
+    end
+end
+
+function love.keypressed(key)
+    _iterateGameGroup("input", function(input)
+        input:keypressed(key)
+    end)
+end
+
+function love.keyreleased(key)
+    _iterateGameGroup("input", function(input)
+        input:keyreleased(key)
+    end)
+end
+
+function love.mousepressed(x, y, button) 
+    _iterateGameGroup("input", function(input)
+        input:mousepressed(x, y, button)
+    end)
+end
+
+function love.mousereleased(x, y, button) 
+    _iterateGameGroup("input", function(input)
+        input:mousereleased(x, y, button)
+    end)
 end

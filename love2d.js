@@ -442,12 +442,14 @@ function build(build_path, objects, callback) {
 		var spr = objects['spritesheet'][e];
 		var img = b_library.getByUUID("image", spr.img_source);
 
-		params = spr.parameters;
+        if (img) { // was sprite assigned an image?
+            params = spr.parameters;
 
-		assets += "function assets:"+spr.name+'()\n'+
-				  "\tlocal img = assets:"+img.name+"()\n"+
-				  "\treturn anim8.newGrid("+params.frameWidth+", "+params.frameHeight+", img:getWidth(), img:getHeight()), img\n"+
-				  "end\n\n";
+            assets += "function assets:"+spr.name+'()\n'+
+                      "\tlocal img = assets:"+img.name+"()\n"+
+                      "\treturn anim8.newGrid("+params.frameWidth+", "+params.frameHeight+", img:getWidth(), img:getHeight()), img\n"+
+                      "end\n\n";
+        }
 	}
 
 	// CONF.LUA

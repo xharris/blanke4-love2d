@@ -5,9 +5,9 @@ Net = {
     client = nil,
     server = nil,
     
-    onReceive = nil,    -- data
-    onConnect = nil,    -- id
-    onDisconnect = nil, -- id
+    onReceive = nil,    
+    onConnect = nil,    
+    onDisconnect = nil, 
     
     address = "localhost",
     port = 12345,
@@ -15,16 +15,15 @@ Net = {
     init = function(address, port)
         require "plugins.lube"
         
-        Net.address = ifndef(address, "localhost")
-        Debug.log(Net.address)
-        
-        if not is_init then        
-            Signal.register("love.update", function(dt)
-                if Net.server then Net.server:update(dt) end
-                if Net.client then Net.client:update(dt) end
-            end) -- Signal.register update
-        end -- not is_init
-        
+        Net.address = ifndef(address, "localhost")        
+        Net.is_init = true
+    end,
+    
+    update = function(dt)
+        if Net.is_init then
+            if Net.server then Net.server:update(dt) end
+            if Net.client then Net.client:update(dt) end
+        end
     end,
 
     -- returns "Server" object
@@ -53,17 +52,14 @@ Net = {
         Net.client.handshake = "join"
         
         Net.client:connect(Net.address, Net.port)
-        
-        --Net.client:send("hello") -- server always receives and prints this (see above)
-        return success
     end,
     
-    _onConnect = function(id)
-        if Net.onConnect then Net.onConnect(id) end
+    _onConnect = function(data)
+        if Net.onConnect then Net.onConnect(data) end
     end,
     
-    _onDisconnect = function(id) 
-        if Net.onDisconnect then Net.onDisconnect(id) end
+    _onDisconnect = function(data) 
+        if Net.onDisconnect then Net.onDisconnect(data) end
     end,
     
     _onReceive = function(data)

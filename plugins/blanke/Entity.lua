@@ -48,7 +48,6 @@ _Entity = Class{
 	collisionStopY = nil,	
 
 	onCollision = {["*"] = function() end},
-    onClick = {["*"] = function() end},
     
     on_include = function(self)
         table.insert(game.entity, self)
@@ -227,7 +226,7 @@ _Entity = Class{
 			-- is it an Animation or an Image
 			if self.sprite.update ~= nil then
 				self.sprite:draw(img, self.x, self.y, math.rad(self.sprite_angle), self.sprite_xscale, self.sprite_yscale, self.sprite_xoffset, self.sprite_yoffset, self.sprite_xshear, self.sprite_yshear)
-			else
+			elseif img then
 				love.graphics.draw(img, self.x, self.y, math.rad(self.sprite_angle), self.sprite_xscale, self.sprite_yscale, self.sprite_xoffset, self.sprite_yoffset, self.sprite_xshear, self.sprite_yshear)
 			end
 			love.graphics.pop()
