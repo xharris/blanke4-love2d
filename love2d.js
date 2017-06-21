@@ -98,15 +98,17 @@ exports.targets = {
 						buildLove(objects, function(path){
 							nwFILEX.copy(path, nwPATH.join(build_path, 'Contents', 'Resources', b_project.getSetting("engine", "title")+'.love'), function(err){
 								if (err) return;
-
+								
 								//
 
 								// modify app/Contents/Info.plist			
-								plist_repl = [
-									['<COMPANY>', 'Made with BlankE'],
-									['<TITLE>', b_project.getSetting("engine", "title")]
+								var plist_repl = [
+									['org.love2d.love', 'com.BlankE.'+b_project.getSetting("engine", "title")],
+									['LÖVE Project', 'BlankE project'],
+									['LÖVE>', b_project.getSetting("engine", "title")]
 								];
 								plist_path = nwPATH.join(build_path, 'Contents', 'Info.plist');
+								console.log('edit:'+plist_path);
 								nwHELPER.copyScript(plist_path, plist_path, plist_repl);
 
 								eSHELL.openItem(nwPATH.dirname(build_path));
