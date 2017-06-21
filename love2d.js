@@ -50,24 +50,32 @@ exports.targets = {
 				buildLove(objects, function(path){
 					downloadLove('win', function(){
 
-						switch(nwOS.platform()) {
-							case "win32":
+						var cmd = '';
+						switch(nwOS.type()) {
+							case "Windows_NT":
 								// combine love.exe and .love
 								// Ex. copy /b love.exe+SuperGame.love SuperGame.exe
 								cmd = 'copy /b \"'+nwPATH.join(getLoveFolder('win'), "love.exe")+'\"+\"'+path+'\" \"'+build_path+'\"';
-								nwCHILD.exec(cmd);
 
-								// copy required dlls
-								var other_files = ["love.dll", "lua51.dll", "mpg123.dll", "SDL2.dll"];
-								for (var o = 0; o < other_files.length; o++) {
-									var file = other_files[o];
-									nwFILEX.copy(nwPATH.join(getLoveFolder('win'), file), nwPATH.join(nwPATH.dirname(build_path), file));
-								}
-								
-								eSHELL.openItem(nwPATH.dirname(build_path));
+							break;
+
+							case "Darwin":
+								  // Ex. cat love.exe SuperGame.love > SuperGame.exe
+								  cmd = 'cat \"'+nwPATH.join(getLoveFolder('win'), "love.exe")+'\" \"'+path+'\" > \"'+build_path+'\"';
 							break;
 						}
 
+						if (cmd !== '') {
+							nwCHILD.exec(cmd);	
+							// copy required dlls
+							var other_files = ["love.dll", "lua51.dll", "mpg123.dll", "SDL2.dll"];
+							for (var o = 0; o < other_files.length; o++) {
+								var file = other_files[o];
+								nwFILEX.copy(nwPATH.join(getLoveFolder('win'), file), nwPATH.join(nwPATH.dirname(build_path), file));
+							}
+							
+							eSHELL.openItem(nwPATH.dirname(build_path));
+						}
 					});
 					
 				});
