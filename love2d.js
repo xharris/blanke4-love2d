@@ -394,7 +394,7 @@ function build(build_path, objects, callback) {
 		if (script.code_path.length > 1) {
 			script.code_path = nwPATH.join('script', script.name + '_' + e + '.lua');
 			assets += "function assets:"+script.name+"()\n"+
-					  "\treturn 'assets/scripts/"+script.code_path.replace(/\\/g,"/").replace('.lua','')+"'\n"+
+					  "\treturn 'assets/scripts/"+script.code_path.replace(/\\/g,"/")+"'\n"+
 					  "end\n\n";
 		}		
 	}

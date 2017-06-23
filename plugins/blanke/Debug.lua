@@ -18,6 +18,11 @@ Debug = {
     
     log = function(...)
         table.insert(Debug.lines, 1, tostring(...))
+        print(...)
+    end,
+
+    clear = function()
+        Debug.lines = {}
     end
 }
 
