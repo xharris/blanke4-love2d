@@ -462,6 +462,11 @@ function build(build_path, objects, callback) {
         }
 	}
 
+	// SCENE
+	for (var s in objects['scene']) {
+		
+	}
+
 	// CONF.LUA
 	var conf = '';
 	for (var cat in exports.settings) {
