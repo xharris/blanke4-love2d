@@ -51,12 +51,6 @@ _Entity = Class{
     
     on_include = function(self)
         table.insert(game.entity, self)
-
-        Signal.register('love.update', function(dt)
-			if self.auto_update then
-				self:update(dt)
-			end
-		end)
     end,
     
     update = function(self, dt)
@@ -274,34 +268,11 @@ _Entity = Class{
 	-- str shape: rectangle, polygon, circle, point
 	-- str name: reference name of shape
 	addShape = function(self, name, shape, args, tag)
-		local new_shape
+		local new_hitbox = Hitbox(shape, self.x, self.y, args, tag)
+		new_hitbox.auto_update = false
+		new_hitbox:disable()
+		local new_shape = new_hitbox:getHCShape()
 
-		local xoffset = self.x
-		local yoffset = self.y
-
-		if shape == "rectangle" then
-			args[1] = args[1] + xoffset
-			args[2] = args[2] + yoffset
-			new_shape = HC.rectangle(unpack(args))
-		elseif shape == "polygon" then
-			for a = 0, #args, 2 do
-				args[a] = args[a] + xoffset
-				args[a+1] = args[a+1] + yoffset
-			end
-			new_shape = HC.polygon(unpack(args))
-		elseif shape == "circle" then
-			args[1] = args[1] + xoffset
-			args[2] = args[2] + yoffset
-			new_shape = HC.circle(unpack(args))
-		elseif shape == "point" then
-			args[1] = args[1] + xoffset
-			args[2] = args[2] + yoffset
-			new_shape = HC.point(unpack(args))
-		end
-
-		new_shape.xoffset = args[1] - xoffset
-		new_shape.yoffset = args[2] - yoffset
-		new_shape.tag = tag
         new_shape.parent_ent = self
 		self.shapes[name] = new_shape
 

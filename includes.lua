@@ -1,5 +1,5 @@
 game_name = "<GAME_NAME>"
-game = {entity={}, view={}, map={}, input={}, tween={}}
+game = {entity={}, view={}, map={}, input={}, tween={}, scene={}, hitbox={}}
 
 function _iterateGameGroup(group, func)
     for i, obj in ipairs(game[group]) do
@@ -28,12 +28,14 @@ HC = require 'plugins.HC'
 Image = require 'plugins.blanke.Image'
 Net = require 'plugins.blanke.Net'
 Save = require 'plugins.blanke.Save'
+Hitbox = require('plugins.blanke.Hitbox')
 _Entity = require 'plugins.blanke.Entity'
 Map = require 'plugins.blanke.Map'
 View = require 'plugins.blanke.View'
 Effect = require 'plugins.blanke.Effect'
 Dialog = require 'plugins.blanke.Dialog'
 Tween = require 'plugins.blanke.Tween'
+Scene = require 'plugins.blanke.Scene'
 
 assets = require 'assets'
 

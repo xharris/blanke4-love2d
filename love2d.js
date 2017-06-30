@@ -421,7 +421,7 @@ function build(build_path, objects, callback) {
 		var comment_wrap = (params["[wrap]horizontal"] == undefined ? "--" : "");
 
 		assets += "function assets:"+img.name+"()\n"+
-				  "\tlocal new_img = love.graphics.newImage(\'assets/image/"+img.path+"\')\n"+
+				  "\tlocal new_img = Image(\'assets/image/"+img.path+"\')\n"+
 				  "\tnew_img:setFilter('"+params.min+"', '"+params.mag+"', "+params.anisotropy+")\n"+
 			 	  "\t"+comment_wrap+"new_img:setWrap('"+params["[wrap]horizontal"]+"', '"+params["[wrap]vertical"]+"')\n"+
 			 	  "\treturn new_img\n"+
@@ -485,6 +485,10 @@ function build(build_path, objects, callback) {
 			  if (err) throw err;
 			});
 		});
+
+		assets += "function assets:"+scene.name+'()\n'+
+				  "\treturn \"assets/scene/"+scene.name+".json\"\n"+
+				  "end\n\n";
 	}
 
 	// CONF.LUA
