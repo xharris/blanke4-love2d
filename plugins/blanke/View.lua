@@ -40,14 +40,6 @@ View = Class{
         self.shake_type = 'smooth'
         
         table.insert(game.view, self)
-        --[[
-		Signal.register('love.update', function(dt)
-			self._dt = dt
-			if self.auto_update then
-				self:update()
-			end
-		end)
-        ]]--
 	end,
 
 	follow = function(self, entity)
@@ -112,7 +104,7 @@ View = Class{
         self._squeeze_dt = 0
     end,
 
-	update = function(self)
+	update = function(self, dt)
 		if self.followEntity then
 			local follow_x = self.followEntity.x
 			local follow_y = self.followEntity.y
@@ -172,18 +164,18 @@ View = Class{
         if self.shake_type == 'smooth' then
             modifier = 1
         elseif self.shake_type == 'rigid' then
-            modifier =  (random_range(1, 20)/10)
+            modifier = (random_range(1, 20)/10)
         end
         
         local shake_x = sinusoidal(-self.shake_x, self.shake_x, self.shake_intensity * modifier, 0)
         local shake_y = sinusoidal(-self.shake_y, self.shake_y, self.shake_intensity * modifier, 0)
         
         if self.shake_y > 0 then
-            self.shake_y = lerp(self.shake_y, 0 ,self._dt*self.shake_falloff)
+            self.shake_y = lerp(self.shake_y, 0 ,dt*self.shake_falloff)
         end
         
         if self.shake_x > 0 then
-            self.shake_x = lerp(self.shake_x, 0 ,self._dt*self.shake_falloff)
+            self.shake_x = lerp(self.shake_x, 0 ,dt*self.shake_falloff)
         end
         
 		-- move the camera
@@ -199,6 +191,12 @@ View = Class{
 	detach = function(self)
 		self.camera:detach()
 	end,
+
+	draw = function(self, draw_func)
+		self:attach()
+		draw_func()
+		self:detach()
+	end
 }
 
 return View

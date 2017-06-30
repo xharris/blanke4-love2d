@@ -1,13 +1,12 @@
 Input = Class{
-
-	in_key = {},
-    in_mouse = {},
-    in_region = {},
-    
-	onInput = nil,
-	_on = false, -- are any of the inputs active?
-
 	init = function(self, ...)
+        self.in_key = {}
+        self.in_mouse = {}
+        self.in_region = {}
+
+        self.onInput = nil
+        self._on = false -- are any of the inputs active?
+
 		-- store inputs
 		arg_inputs = {...}
 		for i_in, input in ipairs(arg_inputs) do
