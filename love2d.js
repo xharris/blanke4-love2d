@@ -30,6 +30,18 @@ function getBuildPath() {
 }
 
 exports.targets = {
+	"source" : {
+		build: function(objects) {
+			b_console.log('build: source');
+
+			last_object_set = objects;
+			var path = nwPATH.join(getBuildPath(), 'source');
+			build(path, objects, function(){
+				eSHELL.openItem(nwPATH.dirname(path));
+			});
+		}
+	},
+
 	"love" : {
 		build: function(objects) {
 			b_console.log('build: love')
@@ -210,7 +222,7 @@ function runLove(love_path, show_cmd) {
 
 exports.run = function(objects) {
 	last_object_set = objects;
-	var path = nwPATH.join(getBuildPath(), 'temp');
+	var path = nwPATH.join(getBuildPath(), 'source');
 	build(path, objects, function(){
 		runLove(path);
 	});
@@ -218,7 +230,8 @@ exports.run = function(objects) {
 
 exports.settings = {
     "general" : [
-        {"type" : "number", "name" : "instance count", "default" : 1, "min" : 1, "max" :  1000000, "tooltip": "Number of instances of the game to run"}
+        {"type" : "number", "name" : "instance count", "default" : 1, "min" : 1, "max" :  1000000, "tooltip": "Number of instances of the game to run"},
+		{"type" : "bool", "name" : "Compress Scenes", "default" : "false", "tooltip": "Compress map data files created by Scene object"}
 	],
 	"includes" : [
 		{"type" : "bool", "name" : "printr", "default" : "false", "tooltip": "Print tables using print_r", "include": 'require "plugins.printr"'},
@@ -464,7 +477,14 @@ function build(build_path, objects, callback) {
 
 	// SCENE
 	for (var s in objects['scene']) {
-		
+		var scene = objects['scene'][s];
+		var scene_data = JSON.stringify(getModuleFn("scene", "convertMapToScene")(s));
+
+		nwMKDIRP(nwPATH.join(build_path, 'assets', 'scene'), function(){
+			nwFILE.writeFile(nwPATH.join(build_path, 'assets', 'scene', scene.name+'.json'), scene_data, (err) => {
+			  if (err) throw err;
+			});
+		});
 	}
 
 	// CONF.LUA
