@@ -81,7 +81,7 @@ Entity = Class{
 		if self.xprevious ~= self.x or self.yprevious ~= self.y then
 			for s, shape in pairs(self.shapes) do
 				-- account for x/y offset?
-				--shape:moveTo(self.x + shape.xoffset, self.y + shape.yoffset)
+				--shape:moveTo(self.x, self.y)
 			end
 		end
 
@@ -178,7 +178,7 @@ Entity = Class{
 		local sx = self.sprite_xoffset
 		local sy = self.sprite_yoffset
 
-		love.graphics.push()
+		love.graphics.push("all")
 		love.graphics.translate(self.x, self.y)
 		love.graphics.rotate(math.rad(self.sprite_angle))
 		love.graphics.shear(self.sprite_xshear, self.sprite_yshear)
@@ -197,14 +197,24 @@ Entity = Class{
 	debugCollision = function(self)
 		-- draw collision shapes
 		for s, shape in pairs(self.shapes) do
-			love.graphics.setColor(255,0,0,255*(2/3))
 			shape:draw("line")
 		end
 	end,
 
 	setSpriteIndex = function(self, index)
+		assert(self._sprites[index], "Animation not found: \'"..index.."\'")
+
 		self.sprite_index = index
 		self.sprite = self._sprites[self.sprite_index]
+
+		if self._sprite_prev ~= self.sprite_index then
+			self:_refreshSpriteDims()
+			self._sprite_prev = self.sprite_index
+		end
+	end,
+
+	_refreshSpriteDims = function(self)
+		self.sprite_width, self.sprite_height = self.sprite:getDimensions()
 	end,
 
 	draw = function(self)
@@ -212,15 +222,9 @@ Entity = Class{
 			self:preDraw()
 		end
 
-		self.sprite = self._sprites[self.sprite_index]
+		self:setSpriteIndex(self.sprite_index)
 
 		if self.sprite ~= nil then
-			-- sprite dimensions
-			if self._sprite_prev ~= self.sprite_index  then
-				self.sprite_width, self.sprite_height = self.sprite:getDimensions()
-				self._sprite_prev = self.sprite_index
-			end
-
 			-- draw current sprite (image, x,y, angle, sx, sy, ox, oy, kx, ky) s=scale, o=origin, k=shear
 			local img = self._images[self.sprite_index]
 			love.graphics.push()
@@ -278,7 +282,7 @@ Entity = Class{
 	-- str name: reference name of shape
 	addShape = function(self, name, shape, args, tag)
 		tag = ifndef(tag, self.classname..'.'..name)
-		local new_hitbox = Hitbox(shape, self.x, self.y, args, tag)
+		local new_hitbox = Hitbox(shape, 0, 0, args, tag)
 		new_hitbox:setParent(self)
 		self.shapes[name] = new_hitbox
 	end,

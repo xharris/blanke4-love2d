@@ -31,15 +31,15 @@ Hitbox = Class{
 		self.HCShape.tag = tag
 
 		self._enabled = true
-		self.color = {255,0,0,255*(2/3)}
+		self.color = {255,0,0,255*(.5)}
 		self.parent = nil
 		HC.register(self.HCShape)
 	end,
 
 	draw = function(self, mode)
-		love.graphics.push()
-		love.graphics.setColor(self.color)
-		self.HCShape:draw(ifndef(mode, 'fill'))
+		love.graphics.push("all")
+			love.graphics.setColor(self.color)
+			self.HCShape:draw(ifndef(mode, 'fill'))
 		love.graphics.pop()
 	end,
 
@@ -49,6 +49,10 @@ Hitbox = Class{
 
 	move = function(self, x, y)
 		self.HCShape:move(x, y)
+	end,
+
+	moveTo = function(self, x, y)
+		self.HCShape:moveTo(x+self.HCShape.xoffset, y+self.HCShape.yoffset)
 	end,
 
 	center = function(self)
