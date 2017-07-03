@@ -81,7 +81,7 @@ Entity = Class{
 		if self.xprevious ~= self.x or self.yprevious ~= self.y then
 			for s, shape in pairs(self.shapes) do
 				-- account for x/y offset?
-				--shape:moveTo(self.x, self.y)
+				shape:moveTo(self.x, self.y)
 			end
 		end
 
@@ -282,7 +282,7 @@ Entity = Class{
 	-- str name: reference name of shape
 	addShape = function(self, name, shape, args, tag)
 		tag = ifndef(tag, self.classname..'.'..name)
-		local new_hitbox = Hitbox(shape, 0, 0, args, tag)
+		local new_hitbox = Hitbox(shape, args, tag, self.x, self.y)
 		new_hitbox:setParent(self)
 		self.shapes[name] = new_hitbox
 	end,

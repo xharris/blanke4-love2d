@@ -1,5 +1,9 @@
 Hitbox = Class{
-	init = function(self, shape, xoffset, yoffset, args, tag)
+	init = function(self, shape, args, tag, xoffset, yoffset)
+		Debug.log(tostring(xoffset)..' '..tostring(yoffset))
+		xoffset = ifndef(xoffset, 0)
+		yoffset = ifndef(yoffset, 0)
+
 		self.HCShape = nil
 		if shape == "rectangle" then
 			args[1] = args[1] + xoffset
@@ -21,12 +25,14 @@ Hitbox = Class{
 			self.HCShape = HC.point(unpack(args))
 		end
 
-		self.HCShape.xoffset = xoffset
-		self.HCShape.yoffset = yoffset
+		self.HCShape.xoffset = 0--xoffset
+		self.HCShape.yoffset = 0--yoffset
 		if shape ~= "polygon" then
-			self.HCShape.xoffset = args[1] - xoffset
-			self.HCShape.yoffset = args[2] - yoffset
+			self.HCShape.xoffset = (args[1] - xoffset) / 2
+			self.HCShape.yoffset = (args[2] - yoffset) / 2
 		end
+
+		Debug.log(tag..' '..tostring(self.HCShape.xoffset)..' '..tostring(self.HCShape.yoffset))
 
 		self.HCShape.tag = tag
 

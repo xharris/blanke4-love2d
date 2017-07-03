@@ -75,9 +75,13 @@ Scene = Class{
 	addEntity = function(self, ent_name, x, y, layer, width, height) 
 		layer = self:_checkLayerArg(layer)
 
-		local new_entity = _G[ent_name](width, height)
-		new_entity.x = x
-		new_entity.y = y
+		Entity.x = x
+		Entity.y = y
+		local new_entity = _G[ent_name](x, y, width, height)
+		Entity.x = 0
+		Entity.y = 0
+		--new_entity.x = x
+		--new_entity.y = y
 
 		self.layers[layer]["entity"] = ifndef(self.layers[layer]["entity"], {})
 		table.insert(self.layers[layer].entity, new_entity)
@@ -101,7 +105,7 @@ Scene = Class{
 		layer = self:_checkLayerArg(layer)
 
 		self.layers[layer]["hitbox"] = ifndef(self.layers[layer]["hitbox"], {})
-		local new_hitbox = Hitbox("polygon", 0, 0, hit_info.points, hit_name)
+		local new_hitbox = Hitbox("polygon", hit_info.points, hit_name)
 		new_hitbox:setColor(hit_info.color)
 		table.insert(self.layers[layer].hitbox, new_hitbox)
 	end,
