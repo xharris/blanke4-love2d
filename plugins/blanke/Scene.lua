@@ -35,7 +35,7 @@ Scene = Class{
 					local uuid = rect.uuid
 					local rect_obj = self.load_objects[uuid]
 
-					self:addEntity(rect_obj.name, layer, rect.x, rect.y, rect_obj.width, rect_obj.height)
+					self:addEntity(rect_obj.name, rect.x, rect.y, layer, rect_obj.width, rect_obj.height)
 				end
 			end
 
@@ -44,7 +44,7 @@ Scene = Class{
 					local uuid = image.uuid
 					local image_obj = self.load_objects[uuid]
 
-					self:addTile(image_obj.name, layer, image.x, image.y, image.crop)
+					self:addTile(image_obj.name, image.x, image.y, image.crop, layer)
 				end
 			end
 
@@ -56,7 +56,7 @@ Scene = Class{
 					-- turn points into array
 					hitbox.points = hitbox.points:split(',')
 
-					self:addHitbox(hit_name, layer, hitbox)
+					self:addHitbox(hitbox_obj.name, hitbox, layer)
 				end
 			end
 		end
@@ -72,7 +72,7 @@ Scene = Class{
 		return layer
 	end,
 
-	addEntity = function(self, ent_name, layer, x, y, width, height) 
+	addEntity = function(self, ent_name, x, y, layer, width, height) 
 		layer = self:_checkLayerArg(layer)
 
 		local new_entity = _G[ent_name](width, height)
@@ -84,7 +84,7 @@ Scene = Class{
 		return new_entity
 	end,
 
-	addTile = function(self, img_name, layer, x, y, img_info) 
+	addTile = function(self, img_name, x, y, img_info, layer) 
 		layer = self:_checkLayerArg(layer)
 
 		-- check if the spritebatch exists yet
@@ -97,14 +97,31 @@ Scene = Class{
 		return spritebatch:add(love.graphics.newQuad(img_info.x, img_info.y, img_info.width, img_info.height, self.images[img_name].height, self.images[img_name].width), x, y)
 	end,
 
-	addHitbox = function(self, hit_name, layer, hit_info) 
+	addHitbox = function(self, hit_name, hit_info, layer) 
 		layer = self:_checkLayerArg(layer)
 
 		self.layers[layer]["hitbox"] = ifndef(self.layers[layer]["hitbox"], {})
 		local new_hitbox = Hitbox("polygon", 0, 0, hit_info.points, hit_name)
 		new_hitbox:setColor(hit_info.color)
-		new_hitbox.auto_update = false
 		table.insert(self.layers[layer].hitbox, new_hitbox)
+	end,
+
+	getEntity = function(self, in_entity, in_layer)
+		local entities = {}
+		for name, layer in pairs(self.layers) do
+			if in_layer == nil or in_layer == layer then
+				for i_e, entity in ipairs(layer.entity) do
+					if entity.classname == in_entity then
+						table.insert(entities, entity)
+					end
+				end
+			end
+		end
+
+		if #entities == 1 then
+			return entities[1]
+		end
+			return entities
 	end,
 
 	update = function(self, dt) 

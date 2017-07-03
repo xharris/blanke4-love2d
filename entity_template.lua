@@ -1,7 +1,7 @@
 <NAME> = Class{}
 
 function <NAME>:init()
-	<NAME>:include(_Entity) 
+	self:include(_Entity) 
 	
 	-- self.variable = value
 	-- Signal.register('love.update', function(dt) self:update(dt) end)

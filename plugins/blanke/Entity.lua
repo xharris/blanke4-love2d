@@ -1,54 +1,56 @@
 local assets = require "assets"
  
-_Entity = Class{
+Entity = Class{
+    _images = {},		
+	_sprites = {}, 			-- is actually the animations
+	sprite = nil,			-- currently active animation
+	classname = "",
+
+	-- x and y coordinate of sprite
+	x = 0,	
+	y = 0,
+    auto_update = AUTO_UPDATE,
+
+	-- sprite/animation variables
+	_sprite_prev = '', 		-- previously used sprite
+	sprite_index = '',		-- string index of the current sprite
+	sprite_width = 0,		-- readonly
+	sprite_height = 0,		-- readonly
+	sprite_angle = 0,		-- angle of sprite in degrees
+	sprite_xscale = 1,	
+	sprite_yscale = 1,
+	sprite_xoffset = 0,
+	sprite_yoffset = 0,
+	sprite_xshear = 0,
+	sprite_yshear = 0,
+	sprite_color = {['r']=255,['g']=255,['b']=255},
+	sprite_alpha = 255,
+	sprite_speed = 1,
+	sprite_frame = 0,
+
+	-- movement variables
+	direction = 0,
+	friction = 0,
+	gravity = 0,
+	gravity_direction = 0,
+	hspeed = 0,
+	vspeed = 0,
+	speed = 0,
+	xprevious = 0,
+	yprevious = 0,
+	xstart = 0,
+	ystart = 0,
+
+	-- collision
+	shapes = {},
+	_main_shape = '',
+	collisionStop = nil,
+	collisionStopX = nil,
+	collisionStopY = nil,	
+
+	onCollision = {["*"] = function() end},
+
     on_include = function(self)
-    	self._images = {}		
-		self._sprites = {} 			-- is actually the animations
-		self.sprite = nil			-- currently active animation
-
-		-- x and y coordinate of sprite
-		self.x = 0	
-		self.y = 0
-	    self.auto_update = AUTO_UPDATE
-
-		-- sprite/animation variables
-		self._sprite_prev = '' 		-- previously used sprite
-		self.sprite_index = ''		-- string index of the current sprite
-		self.sprite_width = 0		-- readonly
-		self.sprite_height = 0		-- readonly
-		self.sprite_angle = 0		-- angle of sprite in degrees
-		self.sprite_xscale = 1	
-		self.sprite_yscale = 1
-		self.sprite_xoffset = 0
-		self.sprite_yoffset = 0
-		self.sprite_xshear = 0
-		self.sprite_yshear = 0
-		self.sprite_color = {['r']=255,['g']=255,['b']=255}
-		self.sprite_alpha = 255
-		self.sprite_speed = 1
-		self.sprite_frame = 0
-
-		-- movement variables
-		self.direction = 0
-		self.friction = 0
-		self.gravity = 0
-		self.gravity_direction = 0
-		self.hspeed = 0
-		self.vspeed = 0
-		self.speed = 0
-		self.xprevious = 0
-		self.yprevious = 0
-		self.xstart = 0
-		self.ystart = 0
-
-		-- collision
-		self.shapes = {}
-		self._main_shape = ''
-		self.collisionStop = nil
-		self.collisionStopX = nil
-		self.collisionStopY = nil	
-
-		self.onCollision = {["*"] = function() end}
         table.insert(game.entity, self)
     end,
     
@@ -56,7 +58,7 @@ _Entity = Class{
 		-- bootstrap sprite:goToFrame()
 		if not self.sprite then
 			self.sprite = {}
-			self.sprite.gotoFrame = function()end
+			self.sprite.gotoFrame = function() end
 		end
 
 		if self.preUpdate then
@@ -94,6 +96,9 @@ _Entity = Class{
 		local gravx = self.gravity * math.cos(math.rad(self.gravity_direction))
 		local gravy = self.gravity * math.sin(math.rad(self.gravity_direction))
 	
+		--self.hspeed = ifndef(self.hspeed, 0)
+		--self.vspeed = ifndef(self.vspeed, 0)
+
 		self.hspeed = self.hspeed + gravx
 		self.vspeed = self.vspeed + gravy
 
@@ -106,7 +111,9 @@ _Entity = Class{
 		for name, fn in pairs(self.onCollision) do
 			-- make sure it actually exists
 			if self.shapes[name] ~= nil then
-				local collisions = HC.collisions(self.shapes[name])
+				local obj_shape = self.shapes[name]:getHCShape()
+
+				local collisions = HC.collisions(obj_shape)
 				for other, separating_vector in pairs(collisions) do
                 
 					-- collision action functions
@@ -161,6 +168,7 @@ _Entity = Class{
 
 	getCollisions = function(self, shape_name)
 		if self.shapes[shape_name] then
+			local hc_shape = self.shapes[shape_name]:getHCShape()
 			return HC.collisions(self.shapes[shape_name])
 		end
 		--return {}
@@ -177,6 +185,7 @@ _Entity = Class{
 		love.graphics.scale(self.sprite_xscale, self.sprite_yscale)
 
 		-- draw sprite outline
+		love.graphics.setColor(0,255,0,255*(2/3))
 		love.graphics.rectangle("line", -sx, -sy, self.sprite_width, self.sprite_height)
 
 		-- draw origin point
@@ -188,6 +197,7 @@ _Entity = Class{
 	debugCollision = function(self)
 		-- draw collision shapes
 		for s, shape in pairs(self.shapes) do
+			love.graphics.setColor(255,0,0,255*(2/3))
 			shape:draw("line")
 		end
 	end,
@@ -267,26 +277,21 @@ _Entity = Class{
 	-- str shape: rectangle, polygon, circle, point
 	-- str name: reference name of shape
 	addShape = function(self, name, shape, args, tag)
+		tag = ifndef(tag, self.classname..'.'..name)
 		local new_hitbox = Hitbox(shape, self.x, self.y, args, tag)
-		new_hitbox.auto_update = false
-		new_hitbox:disable()
-		local new_shape = new_hitbox:getHCShape()
-
-        new_shape.parent_ent = self
-		self.shapes[name] = new_shape
-
-		HC.register(new_shape)
+		new_hitbox:setParent(self)
+		self.shapes[name] = new_hitbox
 	end,
 
 	-- remove a collision shape
 	removeShape = function(self, name)
 		if self.shapes[name] ~= nil then
-			HC.remove(self.shapes[name])
+			self.shapes:disable()
 		end
 	end,
 
 	-- the shape that the sprite will follow
-	setMainShape = function(self, name, x_offset, y_offset) 
+	setMainShape = function(self, name) 
 		if self.shapes[name] ~= nil then
 			self._main_shape = name
 		end 
@@ -318,4 +323,4 @@ _Entity = Class{
     end
 }
 
-return _Entity
+return Entity

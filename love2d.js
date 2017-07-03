@@ -37,7 +37,7 @@ exports.targets = {
 			last_object_set = objects;
 			var path = nwPATH.join(getBuildPath(), 'source');
 			build(path, objects, function(){
-				eSHELL.openItem(nwPATH.dirname(path));
+				eSHELL.openItem(path);
 			});
 		}
 	},
@@ -377,9 +377,13 @@ function build(build_path, objects, callback) {
                 first_state = obj.name;
             }
             
-             if (obj.code_path.length > 1) {
+            if (obj.code_path.length > 1) {
                 obj.code_path = nwPATH.join(type, obj.name + '_' + o + '.lua');
                 script_includes += obj.name + " = require \"assets/scripts/"+obj.code_path.replace(/\\/g,"/").replace('.lua','')+"\"\n";
+            }
+
+            if (type === "entity") {
+            	script_includes += obj.name + ".__tostring = function() return \'"+obj.name+"\' end;"+obj.name+".classname=\'"+obj.name+"\'\n"
             }
             
         }
@@ -421,7 +425,7 @@ function build(build_path, objects, callback) {
 		var comment_wrap = (params["[wrap]horizontal"] == undefined ? "--" : "");
 
 		assets += "function assets:"+img.name+"()\n"+
-				  "\tlocal new_img = Image(\'assets/image/"+img.path+"\')\n"+
+				  "\tlocal new_img = love.graphics.newImage(\'assets/image/"+img.path+"\')\n"+
 				  "\tnew_img:setFilter('"+params.min+"', '"+params.mag+"', "+params.anisotropy+")\n"+
 			 	  "\t"+comment_wrap+"new_img:setWrap('"+params["[wrap]horizontal"]+"', '"+params["[wrap]vertical"]+"')\n"+
 			 	  "\treturn new_img\n"+

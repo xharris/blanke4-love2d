@@ -3,14 +3,10 @@ local assets = require "assets"
 local _images = {}
  
 Image = Class{
-	init = function(self, name)
-		self.name = name
 
-		if _images[name] == nil then
-			assert(assets[name] ~= nil, "No image named '"..name.."'")
-			_images[name] = assets[name]()
-		end
-		self.image = _images[name]
+	init = function(self, name)
+		assert(assets[name] ~= nil, "No image named '"..name.."'")
+		self.image = assets[name]()
 
 		self.x = 0
 		self.y = 0

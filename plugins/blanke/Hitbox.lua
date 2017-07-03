@@ -30,11 +30,10 @@ Hitbox = Class{
 
 		self.HCShape.tag = tag
 
-		self.auto_update = true
 		self._enabled = true
-		self.color = {255,255,255,255}
+		self.color = {255,0,0,255*(2/3)}
+		self.parent = nil
 		HC.register(self.HCShape)
-		table.insert(game.hitbox, self)
 	end,
 
 	draw = function(self, mode)
@@ -47,6 +46,14 @@ Hitbox = Class{
 	getHCShape = function(self)
 		return self.HCShape
 	end,
+
+	move = function(self, x, y)
+		self.HCShape:move(x, y)
+	end,
+
+	center = function(self)
+		return self.HCShape:center()
+	end,	
 
 	enable = function(self)
 		if not self._enabled then
@@ -65,6 +72,10 @@ Hitbox = Class{
 	setColor = function(self, new_color)
 		self.color = hex2rgb(new_color)
 		self.color[4] = 255/2
+	end,
+
+	setParent = function(self, parent)
+		self.parent = parent
 	end
 }
 
