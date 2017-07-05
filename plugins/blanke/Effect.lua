@@ -3,7 +3,7 @@ Effect = Class{
 	init = function (self, name)
 		self._shader = nil
 		self._effect_data = nil
-		self.canvas_h, self.canvas_v = love.graphics.newCanvas(), love.graphics.newCanvas()
+		self.canvas = {love.graphics.newCanvas()}
 
 		-- load stored effect
 		assert(_effects[name]~=nil, "Effect '"..name.."' not found")
@@ -26,6 +26,13 @@ Effect = Class{
 
 	draw = function (self, func)
 		if not self._effect_data.extra_draw then
+			love.graphics.setCanvas(self.canvas[1])
+			love.graphics.clear()
+			if func then
+				func()
+			end
+			love.graphics.setCanvas()
+
 			love.graphics.setShader(self._shader)
 			-- send variables
 			for p, default in pairs(self._effect_data.params) do
@@ -37,12 +44,9 @@ Effect = Class{
 					self:send(var_name, var_value)
 				end
 			end
+			love.graphics.draw(self.canvas[1])
 
-			if func then
-				func()
-			end
 			self:clear()
-
 		-- call extra draw function
 		else
 			self._effect_data:extra_draw(func)
@@ -96,6 +100,8 @@ EffectManager = Class{
 	end
 }
 
+-- global shader vals: https://www.love2d.org/wiki/Shader_Variables
+
 EffectManager.new{
 	name = 'template',
 	params = {['myNum']=1},
@@ -109,8 +115,16 @@ extern number myNum;
 #endif
 
 #ifdef PIXEL
+	// color 			- color set by love.graphics.setColor
+	// texture 			- image being drawn
+	// texture_coords 	- coordinates of pixel relative to image (x, y)
+	// screen_coords 	- coordinates of pixel relative to screen (x, y)
+
 	vec4 effect( vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords ) {
-		vec4 pixel = Texel(texture, texture_coords );	//This is the current pixel color
+		// Texel returns a pixel color after taking in a texture and coordinates of pixel relative to texture
+		// Texel -> (r, g, b)
+		vec4 pixel = Texel(texture, texture_coords );	
+
 		pixel.r = pixel.r * myNum;
 		pixel.g = pixel.g * myNum;
 		pixel.b = pixel.b * myNum;

@@ -1,6 +1,6 @@
 EffectManager.new{
 	name = 'crt',
-	params = {inputSize={0,0},outputSize={0,0},textureSize={0,0}},
+	params = {outputSize={0,0}},
 	code = [[
 /*
     CRT-simple shader
@@ -13,10 +13,10 @@ EffectManager.new{
     modified by slime73 for use with love2d and mari0
 */
 
-extern vec2 inputSize;
 extern vec2 outputSize;
-extern vec2 textureSize;
 
+vec2 inputSize = love_ScreenSize.xy;
+vec2 textureSize = love_ScreenSize.xy;
 
 #define SCANLINES
 

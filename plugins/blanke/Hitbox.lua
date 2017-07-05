@@ -1,6 +1,5 @@
 Hitbox = Class{
 	init = function(self, shape, args, tag, xoffset, yoffset)
-		Debug.log(tostring(xoffset)..' '..tostring(yoffset))
 		xoffset = ifndef(xoffset, 0)
 		yoffset = ifndef(yoffset, 0)
 
@@ -31,8 +30,6 @@ Hitbox = Class{
 			self.HCShape.xoffset = (args[1] - xoffset) / 2
 			self.HCShape.yoffset = (args[2] - yoffset) / 2
 		end
-
-		Debug.log(tag..' '..tostring(self.HCShape.xoffset)..' '..tostring(self.HCShape.yoffset))
 
 		self.HCShape.tag = tag
 

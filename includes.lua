@@ -25,6 +25,7 @@ Camera = require 'plugins.hump.camera'
 anim8 = require 'plugins.anim8'
 HC = require 'plugins.HC'
 
+Draw = require 'plugins.blanke.Draw'
 Image = require 'plugins.blanke.Image'
 Net = require 'plugins.blanke.Net'
 Save = require 'plugins.blanke.Save'

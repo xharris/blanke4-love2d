@@ -3,6 +3,7 @@ local sin = math.sin
 local pi = math.pi
 ]]
 function hex2rgb(hex)
+	assert(type(hex) == "string", "hex2rgb: expected string, got "..type(hex).." ("..hex..")")
     hex = hex:gsub("#","")
     if(string.len(hex) == 3) then
         return {tonumber("0x"..hex:sub(1,1)) * 17, tonumber("0x"..hex:sub(2,2)) * 17, tonumber("0x"..hex:sub(3,3)) * 17}

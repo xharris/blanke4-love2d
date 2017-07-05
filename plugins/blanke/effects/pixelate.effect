@@ -1,8 +1,8 @@
 EffectManager.new{
 	name = 'pixelate',
-	params = {textureSize={0,0}, pixel_size=1.0},
+	params = {pixel_size=1.0},
 	code = [[
-extern vec2 textureSize;
+vec2 textureSize = love_ScreenSize.xy;
 extern float pixel_size = 2.0;
 
 vec4 effect(vec4 vcolor, Image texture, vec2 uv, vec2 pixel_coords)
