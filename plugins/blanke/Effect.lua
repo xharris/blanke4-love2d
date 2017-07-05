@@ -22,12 +22,23 @@ Effect = Class{
 			-- setup shader
 			self._shader = love.graphics.newShader(_effects[name].string)
 		end	
+
+		self.auto_update = true
+		table.insert(game.effect, self)
+	end,
+
+	update = function(self, dt)
+		if self.time then self.time = self.time + dt end
+		if self.dt then self.dt = self.dt + dt end
+		if self.screen_size then self.screen_size = {game_width, game_height} end
+		if self.inv_screen_size then self.inv_screen_size = {1/game_width, 1/game_height} end
 	end,
 
 	draw = function (self, func)
 		if not self._effect_data.extra_draw then
 			love.graphics.setCanvas(self.canvas[1])
 			love.graphics.clear()
+			
 			if func then
 				func()
 			end

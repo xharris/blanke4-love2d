@@ -1,6 +1,6 @@
 EffectManager.new{
 	name = 'crt',
-	params = {outputSize={0,0}},
+	params = {outputSize={0,0}, opacity=0.5},
 	code = [[
 /*
     CRT-simple shader
@@ -13,6 +13,7 @@ EffectManager.new{
     modified by slime73 for use with love2d and mari0
 */
 
+extern number opacity;
 extern vec2 outputSize;
 
 vec2 inputSize = love_ScreenSize.xy;
@@ -108,7 +109,7 @@ vec4 scanlineWeights(float distance, vec4 color)
 	// independent of its width. That is, for a narrower beam
 	// "weights" should have a higher peak at the center of the
 	// scanline than for a wider beam.
-	vec4 weights = vec4(distance / 0.3);
+	vec4 weights = vec4(distance / opacity);
 	return 1.4 * exp(-pow(weights * inversesqrt(0.5 * wid), wid)) / (0.6 + 0.2 * wid);
 }
 

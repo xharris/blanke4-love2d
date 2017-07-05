@@ -1,5 +1,5 @@
 game_name = "<GAME_NAME>"
-game = {entity={}, view={}, map={}, input={}, tween={}, scene={}}
+game = {entity={}, view={}, map={}, input={}, tween={}, scene={}, effect={}}
 
 function _iterateGameGroup(group, func)
     for i, obj in ipairs(game[group]) do
