@@ -4,7 +4,6 @@ View = Class{
 		table.insert(_views, self)
 
 		self._dt = 0
-		self.auto_update = true
 
 		self.camera = Camera(0, 0)
 		self.follow_entity = nil
@@ -39,7 +38,7 @@ View = Class{
         self.shake_falloff = 2.5
         self.shake_type = 'smooth'
         
-        table.insert(game.view, self)
+        _addGameObject('view',self)
 	end,
 
 	follow = function(self, entity)

@@ -1,5 +1,13 @@
 game_name = "<GAME_NAME>"
-game = {entity={}, view={}, map={}, input={}, tween={}, scene={}, effect={}}
+game = {}
+AUTO_UPDATE = true
+
+function _addGameObject(type, obj)
+    obj.uuid = uuid()
+    if obj.update then obj.auto_update = true end
+    game[type] = ifndef(game[type],{})
+    table.insert(game[type], obj)
+end
 
 function _iterateGameGroup(group, func)
     for i, obj in ipairs(game[group]) do
@@ -8,6 +16,7 @@ function _iterateGameGroup(group, func)
 end
 
 require "plugins.json.json"
+uuid = require("plugins.uuid")
 
 Class = require 'plugins.hump.class'
 

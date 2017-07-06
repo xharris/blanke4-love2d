@@ -19,7 +19,6 @@ Tween = Class{
 		self.value = value
 		self.duration = duration
 		self.type = ifndef(func_type, 'linear')
-		self.auto_update = true
 
 		-- get whether an object is changing or single var
 		self._multival = false
@@ -40,7 +39,7 @@ Tween = Class{
 		self._func = Tween.tween_func[self.type]
 		self._dt = 0
 
-		table.insert(game.tween, self)
+		_addGameObject('tween', self)
 	end,
 
 	addFunction = function(self, name, func)

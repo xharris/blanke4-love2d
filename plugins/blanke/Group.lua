@@ -1,21 +1,28 @@
 local _views = {}
 Group = Class{
 	init = function (self)
-		self.entities = {}
+		self.children = {}
 	end,
 
 	add = function(self, ent)
-		table.insert(self.entities, ent)
+		table.insert(self.children, ent)
 	end,
 
 	remove = function(self, i)
-		self.entities[i] = nil
+		self.children[i] = nil
 	end,
 
+	func = function(self, func)
+		for i_c, c in ipairs(self.children) do
+			func(c)
+		end
+	end,
+
+	-- for Entity only
 	closest_point = function(self, x, y)
 		local min_dist, min_ent
 
-		for i_e, e in ipairs(self.entities) do
+		for i_e, e in ipairs(self.children) do
 			local dist = e:distance_point(x, y)
 			if dist < min_dist then
 				min_dist = dist

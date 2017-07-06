@@ -12,8 +12,7 @@ Scene = Class{
 		end
 
 		self.draw_hitboxes = false
-		self.auto_update = true
-		table.insert(game.scene, self)
+		_addGameObject('scene',self)
 	end,
 
 	load = function(self, path, compressed)
@@ -72,8 +71,23 @@ Scene = Class{
 		return layer
 	end,
 
-	addEntity = function(self, ent_name, x, y, layer, width, height) 
+	addEntity = function(self, ...)
+		local args = {...}
+		if type(args[1]) == "string" then
+			self:_addEntityStr(unpack(args))
+		end
+		if type(args[1]) == "table" then
+			self:_addEntityTable(unpack(args))
+		end
+	end,
+
+	_addEntityTable = function(self, entity, layer) 
 		layer = self:_checkLayerArg(layer)
+		self.layers[layer]["entity"] = ifndef(self.layers[layer]["entity"], {})
+		table.insert(self.layers[layer].entity, entity)
+	end,
+
+	_addEntityStr = function(self, ent_name, x, y, layer, width, height)
 
 		Entity.x = x
 		Entity.y = y
@@ -82,9 +96,8 @@ Scene = Class{
 		Entity.y = 0
 		--new_entity.x = x
 		--new_entity.y = y
+		self:_addEntityTable(new_entity, layer)
 
-		self.layers[layer]["entity"] = ifndef(self.layers[layer]["entity"], {})
-		table.insert(self.layers[layer].entity, new_entity)
 		return new_entity
 	end,
 

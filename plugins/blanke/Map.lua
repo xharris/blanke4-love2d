@@ -144,7 +144,7 @@ Map = Class{
 			end
 		end -- for loop
         
-        table.insert(game.map, self)
+        _addGameObject('map',self)
 	end,
 
 	--[[

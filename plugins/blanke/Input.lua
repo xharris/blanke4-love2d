@@ -13,7 +13,7 @@ Input = Class{
 			self:add(input)
 		end
 
-        table.insert(game.input, self)
+        _addGameObject('input',self)
 	end,
 
 	add = function(self, input)

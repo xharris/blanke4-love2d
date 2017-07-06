@@ -9,7 +9,6 @@ Entity = Class{
 	-- x and y coordinate of sprite
 	x = 0,	
 	y = 0,
-    auto_update = AUTO_UPDATE,
 
 	-- sprite/animation variables
 	_sprite_prev = '', 		-- previously used sprite
@@ -51,7 +50,7 @@ Entity = Class{
 	onCollision = {["*"] = function() end},
 
     on_include = function(self)
-        table.insert(game.entity, self)
+    	_addGameObject('entity', self)
     end,
     
     update = function(self, dt)

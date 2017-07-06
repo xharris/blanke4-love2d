@@ -23,8 +23,7 @@ Effect = Class{
 			self._shader = love.graphics.newShader(_effects[name].string)
 		end	
 
-		self.auto_update = true
-		table.insert(game.effect, self)
+		_addGameObject('effect',self)
 	end,
 
 	update = function(self, dt)

@@ -16,10 +16,8 @@ Dialog = Class{
         self.timer = Timer.new()
         self.font_obj = love.graphics.newFont(self.font_size)
         self.text_obj = love.graphics.newText(self.font_obj)
-    
-        Signal.register('love.update', function(dt)
-            self:update(dt)
-        end)
+
+        _addGameObject('dialog',self)
     end,
     
     update = function(self, dt)
