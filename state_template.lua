@@ -1,5 +1,3 @@
-local <NAME> = {}
-
 -- Called once, and only once, before entering the state the first time.
 function <NAME>:init() end
 function <NAME>:leave() end 
@@ -16,6 +14,3 @@ end
 function <NAME>:draw()
 
 end	
-
-
-return <NAME>

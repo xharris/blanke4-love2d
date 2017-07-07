@@ -1,7 +1,4 @@
-<NAME> = Class{}
-
 function <NAME>:init()
-	self:include(_Entity) 
 	
 	-- self.variable = value
 	-- Signal.register('love.update', function(dt) self:update(dt) end)
@@ -15,5 +12,3 @@ end
 function <NAME>:postDraw()
 
 end
-
-return <NAME>

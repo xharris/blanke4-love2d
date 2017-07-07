@@ -375,16 +375,18 @@ function build(build_path, objects, callback) {
             
             if (type === "state" && first_state === "") {
                 first_state = obj.name;
+                script_includes += obj.name+" = {}\n";
             }
             
-            if (obj.code_path.length > 1) {
-                obj.code_path = nwPATH.join(type, obj.name + '_' + o + '.lua');
-                script_includes += obj.name + " = require \"assets/scripts/"+obj.code_path.replace(/\\/g,"/").replace('.lua','')+"\"\n";
+            if (type === "entity") {
+            	script_includes += obj.name + " = Class{__includes=Entity};"+obj.name+".__tostring = function() return \'"+obj.name+"\' end;"+obj.name+".classname=\'"+obj.name+"\'\n"
             }
 
-            if (type === "entity") {
-            	script_includes += obj.name + ".__tostring = function() return \'"+obj.name+"\' end;"+obj.name+".classname=\'"+obj.name+"\'\n"
+            if (obj.code_path.length > 1) {
+                obj.code_path = nwPATH.join(type, obj.name + '_' + o + '.lua');
+                script_includes += "require \"assets/scripts/"+obj.code_path.replace(/\\/g,"/").replace('.lua','')+"\"\n";
             }
+
             
         }
     }
