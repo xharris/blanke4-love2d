@@ -1,55 +1,57 @@
 local assets = require "assets"
  
 Entity = Class{
-    _images = {},		
-	_sprites = {}, 			-- is actually the animations
-	sprite = nil,			-- currently active animation
-	classname = "",
+    init = function(self)    
+	    self._images = {}		
+		self._sprites = {} 			-- is actually the animations
+		self.sprite = nil			-- currently active animation
 
-	-- x and y coordinate of sprite
-	x = 0,	
-	y = 0,
+		-- x and y coordinate of sprite
+		self.x = 0
+		self.y = 0
 
-	-- sprite/animation variables
-	_sprite_prev = '', 		-- previously used sprite
-	sprite_index = '',		-- string index of the current sprite
-	sprite_width = 0,		-- readonly
-	sprite_height = 0,		-- readonly
-	sprite_angle = 0,		-- angle of sprite in degrees
-	sprite_xscale = 1,	
-	sprite_yscale = 1,
-	sprite_xoffset = 0,
-	sprite_yoffset = 0,
-	sprite_xshear = 0,
-	sprite_yshear = 0,
-	sprite_color = {['r']=255,['g']=255,['b']=255},
-	sprite_alpha = 255,
-	sprite_speed = 1,
-	sprite_frame = 0,
+		-- sprite/animation variables
+		self._sprite_prev = '' 		-- previously used sprite
+		self.sprite_index = ''		-- string index of the current sprite
+		self.sprite_width = 0		-- readonly
+		self.sprite_height = 0		-- readonly
+		self.sprite_angle = 0		-- angle of sprite in degrees
+		self.sprite_xscale = 1	
+		self.sprite_yscale = 1
+		self.sprite_xoffset = 0
+		self.sprite_yoffset = 0
+		self.sprite_xshear = 0
+		self.sprite_yshear = 0
+		self.sprite_color = {['r']=255,['g']=255,['b']=255}
+		self.sprite_alpha = 255
+		self.sprite_speed = 1
+		self.sprite_frame = 0
 
-	-- movement variables
-	direction = 0,
-	friction = 0,
-	gravity = 0,
-	gravity_direction = 0,
-	hspeed = 0,
-	vspeed = 0,
-	speed = 0,
-	xprevious = 0,
-	yprevious = 0,
-	xstart = 0,
-	ystart = 0,
+		-- movement variables
+		self.direction = 0
+		self.friction = 0
+		self.gravity = 0
+		self.gravity_direction = 0
+		self.hspeed = 0
+		self.vspeed = 0
+		self.speed = 0
+		self.xprevious = 0
+		self.yprevious = 0
+		self.xstart = 0
+		self.ystart = 0
 
-	-- collision
-	shapes = {},
-	_main_shape = '',
-	collisionStop = nil,
-	collisionStopX = nil,
-	collisionStopY = nil,	
+		-- collision
+		self.shapes = {}
+		self._main_shape = ''
+		self.collisionStop = nil
+		self.collisionStopX = nil
+		self.collisionStopY = nil	
 
-	onCollision = {["*"] = function() end},
+		-- networking
+		self.is_net_entity = false
+		self.net_uuid = uuid()
 
-    on_include = function(self)
+		self.onCollision = {["*"] = function() end}
     	_addGameObject('entity', self)
     end,
     
@@ -82,6 +84,7 @@ Entity = Class{
 				-- account for x/y offset?
 				shape:moveTo(self.x, self.y)
 			end
+            if not self.is_net_entity then Net.updateEntities() end
 		end
 
 		self.xprevious = self.x

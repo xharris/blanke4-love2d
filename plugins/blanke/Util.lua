@@ -42,6 +42,10 @@ function string:starts(Start)
     return string.sub(self,1,string.len(Start))==Start
 end
 
+function string:ends(End)
+	return string.sub(self,-string.len(End))==End
+end
+
 function string:split(sep)
    local sep, fields = sep or ":", {}
    local pattern = string.format("([^%s]+)", sep)

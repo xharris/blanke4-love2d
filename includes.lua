@@ -52,6 +52,8 @@ assets = require 'assets'
 <INCLUDES>
 
 function love.load()
+    uuid.randomseed(love.timer.getTime()*10000)
+    
     Gamestate.registerEvents()
 	-- register gamestates
     updateGlobals(0)
@@ -70,7 +72,7 @@ function love.update(dt)
 
     updateGlobals(dt)
     
-    Net.update(dt)
+    Net.update(dt, false)
     
     for i_arr, arr in pairs(game) do
         for i_e, e in ipairs(arr) do
@@ -113,3 +115,7 @@ function love.mousereleased(x, y, button)
         input:mousereleased(x, y, button)
     end)
 end
+
+function love.quit()
+    Net.disconnect()
+end 
