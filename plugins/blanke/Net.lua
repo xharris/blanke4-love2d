@@ -21,11 +21,13 @@ Net = {
     uuid = nil,
 
     init = function(address, port)
-        require "plugins.lube"
-        
-        Net.address = ifndef(address, "localhost")  
+        require 'plugins.lube'
+        Net.address = ifndef(address, "localhost") 
+        Net.port = ifndef(port, Net.port) 
         Net.uuid = uuid()      
         Net.is_init = true
+
+        Debug.log("networking initialized")
     end,
     
     update = function(dt,override)
@@ -43,53 +45,60 @@ Net = {
     end,
 
     -- returns "Server" object
-    host = function(port)
+    host = function()
+        if Net.server then return end
         if not Net.is_init then
-            Net.init(Net.address, port)      
-            Net.server = lube.udpServer()
-            
-            Net.server.callbacks.connect = Net._onConnect
-            Net.server.callbacks.disconnect = Net._onDisconnect
-            Net.server.callbacks.recv = Net._onReceive
+            Net.init(Net.address, Net.port)
+        end      
+        Net.server = lube.udpServer()
+        Net.server:init(Net.port, "udp")
+        
+        Net.server.callbacks.connect = Net._onConnect
+        Net.server.callbacks.disconnect = Net._onDisconnect
+        Net.server.callbacks.recv = Net._onReceive
 
-            Net.server.handshake = Net.uuid
-            
-            Net.server:listen(Net.port)
-            -- room_create() -- default room
-            return true
-        end
-        return false
+        Net.server.handshake = Net.uuid
+        
+        Net.server:startserver(Net.port)
+        -- room_create() -- default room
+
+        return true
     end,
     
     -- returns "Client" object
     join = function(address, port) 
+        if Net.client then return end
         if not Net.is_init then
             Net.init(address, port)
-            Net.client = lube.udpClient()
-            
-            Net.client.callbacks.recv = Net._onReceive
-
-            Net.client.handshake = Net.uuid
-            
-            Net.client:connect(Net.address, Net.port)
-            Net.send({
-                type='netevent',
-                event='join',
-                info={
-                    uuid=Net.uuid
-                }
-            })
-            return true
         end
-        return false
+        Net.client = lube.udpClient()
+        
+        Net.client.callbacks.recv = Net._onReceive
+        Net.client.receive = Net._onReceive
+
+        Net.client.handshake = Net.uuid
+        
+        Net.client:connect(Net.address, Net.port, nil)
+        --[[
+        Net.send({
+            type='netevent',
+            event='join',
+            info={
+                uuid=Net.uuid
+            }
+        })
+        ]]
+
+        return true
     end,
     
     _onConnect = function(data) 
-        --print_r(data)     
-        if Net.onConnect then Net.onConnect(data) end
+        Debug.log('+ ' .. data)
+        Net.send("hi")
     end,
     
     _onDisconnect = function(data) 
+        Debug.log('- ' .. data)
         if Net.onDisconnect then Net.onDisconnect(data) end
         for ent_class, entities in pairs(Net._server_entities) do
             for ent_uuid, entity in pairs(entities) do
@@ -101,6 +110,7 @@ Net = {
     end,
     
     _onReceive = function(data, id)
+        Debug.log(data)
         if data:starts('{') then
             data = json.decode(data)
         elseif data:starts('"') then
@@ -139,6 +149,7 @@ Net = {
         end
 
         if data.type and data.type == 'netevent' then
+            Debug.log(data.event)
             -- new entity added
             if data.event == 'entity.add' then
                 addEntity(data.info)
@@ -191,7 +202,6 @@ Net = {
 
     send = function(data) 
         data = json.encode(data)
-        Debug.log('send ' .. data)
         if Net.server then Net.server:send(data) end
         if Net.client then Net.client:send(data) end
     end,

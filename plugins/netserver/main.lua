@@ -1,6 +1,12 @@
 require 'class'
 require 'lube'
+require 'Util'
+require 'json'
+local uuid = require 'uuid'
 local Debug = require 'Debug'
+
+Debug.setFontSize(10)
+Debug.setMargin(5)
 
 -- BlankE Net server
 Net = {
@@ -26,11 +32,12 @@ Net = {
     uuid = nil,
 
     init = function(address, port)
-        require "plugins.lube"
-        
-        Net.address = ifndef(address, "localhost")  
+        Net.address = ifndef(address, "localhost") 
+        Net.port = ifndef(port, Net.port) 
         Net.uuid = uuid()      
         Net.is_init = true
+
+        Debug.log("networking initialized")
     end,
     
     update = function(dt,override)
@@ -48,52 +55,53 @@ Net = {
     end,
 
     -- returns "Server" object
-    host = function(port)
+    host = function()
         if not Net.is_init then
-            Net.init(Net.address, port)      
-            Net.server = lube.udpServer()
-            
-            Net.server.callbacks.connect = Net._onConnect
-            Net.server.callbacks.disconnect = Net._onDisconnect
-            Net.server.callbacks.recv = Net._onReceive
+            Net.init(Net.address, Net.port)
+        end      
+        Net.server = lube.udpServer()
 
-            Net.server.handshake = Net.uuid
-            
-            Net.server:listen(Net.port)
-            -- room_create() -- default room
-            return true
-        end
-        return false
+        Net.server.callbacks.connect = Net._onConnect
+        Net.server.callbacks.disconnect = Net._onDisconnect
+        Net.server.callbacks.recv = Net._onReceive
+
+        Net.server.handshake = Net.uuid
+        
+        Net.server:listen(Net.port)
+
+        Debug.log('hosting ' .. Net.address .. ':' .. Net.port)
+        -- room_create() -- default room
     end,
     
     -- returns "Client" object
     join = function(address, port) 
         if not Net.is_init then
             Net.init(address, port)
-            Net.client = lube.udpClient()
-            
-            Net.client.callbacks.recv = Net._onReceive
-
-            Net.client.handshake = Net.uuid
-            
-            Net.client:connect(Net.address, Net.port)
-            Net.send({
-                type='netevent',
-                event='join',
-                info={
-                    uuid=Net.uuid
-                }
-            })
-            return true
         end
-        return false
+        Net.client = lube.udpClient()
+        Net.client:init()
+        
+        Net.client.callbacks.recv = Net._onReceive
+
+        Net.client.handshake = Net.uuid
+        
+        Net.client:connect(Net.address, Net.port)
+        Net.send({
+            type='netevent',
+            event='join',
+            info={
+                uuid=Net.uuid
+            }
+        })
     end,
     
     _onConnect = function(data) 
-        if Net.onConnect then Net.onConnect(data) end
+        Debug.log('+ ' .. data)
     end,
     
     _onDisconnect = function(data) 
+        Debug.log('- ' .. data)
+
         if Net.onDisconnect then Net.onDisconnect(data) end
         for ent_class, entities in pairs(Net._server_entities) do
             for ent_uuid, entity in pairs(entities) do
@@ -105,6 +113,7 @@ Net = {
     end,
     
     _onReceive = function(data, id)
+        Net.send(data)
         if data:starts('{') then
             data = json.decode(data)
         elseif data:starts('"') then
@@ -127,7 +136,7 @@ Net = {
 
         function addEntity(info)
             local classname = info.classname
-            local new_entity = _G[classname]()
+            local new_entity = {}
 
             -- set properties
             for key, val in pairs(info) do
@@ -146,6 +155,8 @@ Net = {
             -- new entity added
             if data.event == 'entity.add' then
                 addEntity(data.info)
+
+                Net.send(data)
             end
 
             -- update net entity
@@ -163,7 +174,6 @@ Net = {
 
             -- entities to add on server join
             if data.event == 'entity.sync' and not data.info.exclude_uuid ~= Net.uuid then
-                Debug.log('sync')
                 --for i, info in ipairs(data.info) do
                     --addEntity(info)
                 --end
@@ -195,9 +205,7 @@ Net = {
 
     send = function(data) 
         data = json.encode(data)
-        Debug.log('send ' .. data)
-        if Net.server then Net.server:send(data) end
-        if Net.client then Net.client:send(data) end
+        Net.server:send(data)
     end,
 
     disconnect = function()
@@ -249,14 +257,6 @@ Net = {
             })
         end
     end,
-
-    draw = function(obj_name)
-        if Net._server_entities[obj_name] then
-            for net_uuid, obj in pairs(Net._server_entities[obj_name]) do
-                obj:draw()
-            end
-        end
-    end,
     
     --[[
     room_list = function() end,
@@ -279,55 +279,12 @@ Net = {
     ]]
 }
 
-function love.conf(t)
-    t.identity = nil                    -- The name of the save directory (string)
-    t.version = "0.10.2"                -- The LÖVE version this game was made for (string)
-    t.console = true                   -- Attach a console (boolean, Windows only)
-    t.accelerometerjoystick = true      -- Enable the accelerometer on iOS and Android by exposing it as a Joystick (boolean)
-    t.externalstorage = false           -- True to save files (and read from the save directory) in external storage on Android (boolean) 
-    t.gammacorrect = false              -- Enable gamma-correct rendering, when supported by the system (boolean)
- 
-    t.window.title = "Server"         -- The window title (string)
-    t.window.icon = nil                 -- Filepath to an image to use as the window's icon (string)
-    t.window.width = 800                -- The window width (number)
-    t.window.height = 600               -- The window height (number)
-    t.window.borderless = false         -- Remove all border visuals from the window (boolean)
-    t.window.resizable = false          -- Let the window be user-resizable (boolean)
-    t.window.minwidth = 1               -- Minimum window width if the window is resizable (number)
-    t.window.minheight = 1              -- Minimum window height if the window is resizable (number)
-    t.window.fullscreen = false         -- Enable fullscreen (boolean)
-    t.window.fullscreentype = "desktop" -- Choose between "desktop" fullscreen or "exclusive" fullscreen mode (string)
-    t.window.vsync = true               -- Enable vertical sync (boolean)
-    t.window.msaa = 0                   -- The number of samples to use with multi-sampled antialiasing (number)
-    t.window.display = 1                -- Index of the monitor to show the window in (number)
-    t.window.highdpi = false            -- Enable high-dpi mode for the window on a Retina display (boolean)
-    t.window.x = nil                    -- The x-coordinate of the window's position in the specified display (number)
-    t.window.y = nil                    -- The y-coordinate of the window's position in the specified display (number)
- 
-    t.modules.audio = false              -- Enable the audio module (boolean)
-    t.modules.event = true              -- Enable the event module (boolean)
-    t.modules.graphics = true           -- Enable the graphics module (boolean)
-    t.modules.image = false              -- Enable the image module (boolean)
-    t.modules.joystick = false           -- Enable the joystick module (boolean)
-    t.modules.keyboard = false           -- Enable the keyboard module (boolean)
-    t.modules.math = false               -- Enable the math module (boolean)
-    t.modules.mouse = false              -- Enable the mouse module (boolean)
-    t.modules.physics = false            -- Enable the physics module (boolean)
-    t.modules.sound = false              -- Enable the sound module (boolean)
-    t.modules.system = false             -- Enable the system module (boolean)
-    t.modules.timer = true              -- Enable the timer module (boolean), Disabling it will result 0 delta time in love.update
-    t.modules.touch = false              -- Enable the touch module (boolean)
-    t.modules.video = false              -- Enable the video module (boolean)
-    t.modules.window = true             -- Enable the window module (boolean)
-    t.modules.thread = true             -- Enable the thread module (boolean)
-end
-
 function love.load()
-    Debug.log('hi')
+    Net.host()
 end
 
 function love.update(dt)
-
+    Net.update(dt)
 end
 
 function love.draw()

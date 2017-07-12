@@ -379,7 +379,7 @@ function build(build_path, objects, callback) {
             }
             
             if (type === "entity") {
-            	script_includes += obj.name + " = Class{__includes=Entity,__tostring = function(self) return \'"+obj.name+"\' end,classname=\'"+obj.name+"\'\n"
+            	script_includes += obj.name + " = Class{__includes=Entity,__tostring = function(self) return \'"+obj.name+"\' end,classname=\'"+obj.name+"\'}\n"
             }
 
             if (obj.code_path.length > 1) {

@@ -2,7 +2,7 @@ EffectManager.new{
     name = "wave",
     params = {time=0, size=15},
     code = [[
-    extern number time;
+        extern number time;
         extern number size;
         vec4 effect(vec4 color, Image tex, vec2 tc, vec2 pc)
         {
@@ -11,4 +11,48 @@ EffectManager.new{
             return Texel(tex, p);
         }
     ]]
+}
+
+EffectManager.new{
+    name = 'ripple',
+    params = {},
+    code = [[
+    
+#ifdef VERTEX
+vec4 position( mat4 transform_projection, vec4 vertex_position ) 
+{   
+    /*
+    gl_TexCoord[0] = gl_MultiTexCoord0;
+    gl_Position = ftransform();
+*/
+    return transform_projection*vertex_position;     
+}
+#endif
+
+#ifdef PIXEL
+uniform vec2 screen_size; // Screen resolution
+uniform float time; // time in seconds
+uniform sampler2D tex0; // scene buffer
+
+vec4 effect( vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords ) 
+{
+    
+  vec2 tc = vec2(2,2);//texture_coords.xy;
+  vec2 p = -1.0 + 2.0 * tc;
+  float len = length(p);
+  vec2 uv = tc + (p/len)*cos(len*12.0-time*4.0)*0.03;
+  vec3 col = texture2D(texture,uv).xyz;
+  color = vec4(col,1.0);  
+
+  return Texel(texture, texture_coords);
+}
+
+/*
+    gl_TexCoord[0] -> texture_coords
+    gl_FragColor -> color
+    resolution -> screen_size
+*/
+
+#endif
+]]
 }
